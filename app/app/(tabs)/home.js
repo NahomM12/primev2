@@ -40,6 +40,11 @@ import {
 } from "../../store/address/addressSlice";
 import { Picker } from "@react-native-picker/picker";
 import { getAllPropertyTypes } from "../../store/propertyType/propertyTypeSlice";
+import SearchBarWithFilter from "../../components/home/SearchBarWithFilter";
+import SectionHeader from "../../components/home/SectionHeader";
+import PropertyItem from "../../components/home/PropertyItem";
+import PropertyModal from "../../components/home/PropertyModal";
+import FilterModal from "../../components/home/FilterModal";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CARD_ASPECT_RATIO = 0.8;
@@ -49,790 +54,6 @@ const CATEGORY_ICON_SIZE = SCREEN_WIDTH * 0.09;
 
 // Update the existing cardHeight constant to use the new responsive values
 const cardHeight = CARD_HEIGHT;
-
-// Add this new component at the top
-const PropertyImages = memo(({ images }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  if (!images || images.length === 0) {
-    return (
-      <View
-        style={{ width: CARD_WIDTH - 24, height: CARD_HEIGHT - 24, margin: 10 }}
-        className="bg-gray-200 dark:bg-gray-700 rounded-xl items-center justify-center"
-      >
-        <Ionicons name="image-outline" size={32} color="#9CA3AF" />
-      </View>
-    );
-  }
-
-  return (
-    <View className="relative">
-      <ScrollView
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={(e) => {
-          const newIndex = Math.round(
-            e.nativeEvent.contentOffset.x / (CARD_WIDTH - 24)
-          );
-          setActiveIndex(newIndex);
-        }}
-      >
-        {images.map((image, index) => (
-          <Image
-            key={index}
-            source={{ uri: image }}
-            style={{
-              width: CARD_WIDTH - 24,
-              height: CARD_HEIGHT - 24,
-              margin: 10,
-            }}
-            resizeMode="cover"
-            className="rounded-xl"
-          />
-        ))}
-      </ScrollView>
-
-      {/* Image counter */}
-      {images.length > 1 && (
-        <View className="absolute bottom-4 right-4 bg-black/60 px-2 py-1 rounded-full">
-          <Text className="text-white text-xs">
-            {activeIndex + 1}/{images.length}
-          </Text>
-        </View>
-      )}
-
-      {/* Dot indicators */}
-      {images.length > 1 && (
-        <View className="absolute bottom-4 left-0 right-0 flex-row justify-center space-x-1">
-          {images.map((_, index) => (
-            <View
-              key={index}
-              className={`h-1.5 rounded-full ${
-                index === activeIndex ? "w-4 bg-white" : "w-1.5 bg-white/60"
-              }`}
-            />
-          ))}
-        </View>
-      )}
-    </View>
-  );
-});
-
-// Then modify the PropertyCard component
-const PropertyCard = memo(({ item, onPress, onFavorite }) => {
-  const [isFavorite, setIsFavorite] = useState(item.isFavorite);
-
-  const handleFavoritePress = (e) => {
-    e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    onFavorite(item);
-  };
-
-  return (
-    <TouchableOpacity
-      className="mb-4 mx-4"
-      onPress={() => onPress(item)}
-      style={{ width: CARD_WIDTH }}
-    >
-      <View
-        className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-md flex-row"
-        style={{ height: CARD_HEIGHT }}
-      >
-        <View className="relative" style={{ width: CARD_WIDTH }}>
-          {/* If there are no images, show placeholder */}
-          {!item.images || item.images.length === 0 ? (
-            <View
-              style={{
-                width: CARD_WIDTH - 24,
-                height: CARD_HEIGHT - 24,
-                margin: 10,
-              }}
-              className="bg-gray-200 dark:bg-gray-700 rounded-xl items-center justify-center"
-            >
-              <Ionicons name="image-outline" size={32} color="#9CA3AF" />
-            </View>
-          ) : // If there's only one image, show it directly
-          item.images.length === 1 ? (
-            <Image
-              source={{ uri: item.images[0] }}
-              style={{
-                width: CARD_WIDTH - 24,
-                height: CARD_HEIGHT - 24,
-                margin: 10,
-              }}
-              resizeMode="cover"
-              className="rounded-xl"
-            />
-          ) : (
-            // If there are multiple images, use the PropertyImages component
-            <PropertyImages images={item.images} />
-          )}
-          <View className="absolute top-2 right-2 bg-green-500/90 dark:bg-green-600/90 px-2 py-1 rounded-full">
-            <Text className="text-white text-xs font-medium">
-              {item.property_use === "rent" ? "For Rent" : "For Sale"}
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={handleFavoritePress}
-            className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-full"
-          >
-            <Ionicons
-              name={isFavorite ? "heart" : "heart-outline"}
-              size={20}
-              color={isFavorite ? "#EF4444" : "#6B7280"}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Rest of the component stays the same */}
-      </View>
-    </TouchableOpacity>
-  );
-});
-
-// Memoize the PropertyItem component to prevent unnecessary re-renders
-const PropertyItem = memo(({ item, onPress, onFavorite }) => {
-  const [isFavorite, setIsFavorite] = useState(item.isFavorite);
-
-  const handleFavoritePress = (e) => {
-    e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    onFavorite(item);
-  };
-
-  // Format location string
-  const locationString = [
-    // item.address?.region?.region_name,
-    item.address?.subregion?.subregion_name,
-    item.address?.location?.location,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
-  return (
-    <TouchableOpacity
-      onPress={() => onPress(item)}
-      className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm mx-2"
-      style={{ width: CARD_WIDTH }}
-    >
-      {/* Image Container */}
-      <View className="relative">
-        {!item.images || item.images.length === 0 ? (
-          <View
-            style={{ height: CARD_WIDTH * 0.66 }}
-            className="bg-gray-200 dark:bg-gray-700 rounded-xl mb-4 justify-center items-center"
-          >
-            <Ionicons
-              name="image-outline"
-              size={SCREEN_WIDTH * 0.08}
-              color="#9CA3AF"
-            />
-          </View>
-        ) : (
-          <View
-            style={{ height: CARD_WIDTH * 0.66 }}
-            className="relative rounded-xl mb-4 overflow-hidden"
-          >
-            <Image
-              source={{ uri: item.images[0] }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-            {/* Price Badge */}
-            <View className="absolute top-2 left-2 bg-black/60 px-3 py-1.5 rounded-full">
-              <Text className="text-white font-bold">
-                ETB {item.price?.toLocaleString()}
-              </Text>
-            </View>
-            {/* Favorite Button */}
-            <TouchableOpacity
-              onPress={handleFavoritePress}
-              className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/90 p-2 rounded-full"
-            >
-              <Ionicons
-                name={isFavorite ? "heart" : "heart-outline"}
-                size={20}
-                color={isFavorite ? "#EF4444" : "#6B7280"}
-              />
-            </TouchableOpacity>
-            {/* Views Badge */}
-            <View className="absolute bottom-2 right-2 bg-black/60 px-2 py-1 rounded-full flex-row items-center">
-              <Ionicons name="eye-outline" size={14} color="white" />
-              <Text className="text-white text-xs ml-1">
-                {item.views?.count || 0}
-              </Text>
-            </View>
-          </View>
-        )}
-      </View>
-
-      {/* Content */}
-      <View>
-        {/* Title */}
-        <Text
-          className="text-lg font-bold text-gray-800 dark:text-white mb-2"
-          numberOfLines={1}
-        >
-          {item.title}
-        </Text>
-
-        {/* Location */}
-        <View className="flex-row items-start">
-          <Ionicons
-            name="location-outline"
-            size={14}
-            color="#6B7280"
-            className="mt-1"
-          />
-          <Text
-            className="text-gray-500 dark:text-gray-400 ml-1 flex-1"
-            numberOfLines={2}
-          >
-            {locationString}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-});
-
-// Create a separate memoized modal component
-const PropertyModal = memo(
-  ({
-    visible,
-    onClose,
-    property,
-    favouriteOn,
-    onFavourite,
-    onBuy,
-    isPurchasing,
-    showPaymentOptions,
-    setShowPaymentOptions,
-    paymentMethod,
-    setPaymentMethod,
-  }) => {
-    const [activeImageIndex, setActiveImageIndex] = useState(0);
-
-    if (!visible || !property) return null;
-
-    // Format location string
-    const locationString = [
-      property?.address?.region?.region_name,
-      property?.address?.subregion?.subregion_name,
-      property?.address?.location?.location_name,
-    ]
-      .filter(Boolean)
-      .join(", ");
-
-    // Filter typeSpecificFields to only show fields with data
-    const validTypeSpecificFields = Object.entries(
-      property.typeSpecificFields || {}
-    )
-      .filter(
-        ([_, value]) =>
-          value !== null &&
-          value !== undefined &&
-          value !== false &&
-          value !== ""
-      )
-      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-
-    return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={visible}
-        onRequestClose={onClose}
-      >
-        <View className="flex-1 bg-black/50">
-          <View className="flex-1 mt-20 bg-white dark:bg-gray-900 rounded-t-3xl overflow-hidden">
-            {/* Header with close button */}
-            <TouchableOpacity
-              onPress={onClose}
-              className="absolute top-4 right-4 z-10 bg-black/50 p-2 rounded-full"
-            >
-              <Ionicons name="close" size={24} color="white" />
-            </TouchableOpacity>
-
-            <ScrollView className="flex-1">
-              {/* Image Gallery */}
-              <View
-                className="relative"
-                style={{ height: SCREEN_HEIGHT * 0.4 }}
-              >
-                {property.images && property.images.length > 0 ? (
-                  <>
-                    <ScrollView
-                      horizontal
-                      pagingEnabled
-                      showsHorizontalScrollIndicator={false}
-                      onMomentumScrollEnd={(e) => {
-                        const newIndex = Math.round(
-                          e.nativeEvent.contentOffset.x / SCREEN_WIDTH
-                        );
-                        setActiveImageIndex(newIndex);
-                      }}
-                    >
-                      {property.images.map((image, index) => (
-                        <Image
-                          key={index}
-                          source={{ uri: image }}
-                          style={{
-                            width: SCREEN_WIDTH,
-                            height: SCREEN_HEIGHT * 0.4,
-                          }}
-                          resizeMode="cover"
-                        />
-                      ))}
-                    </ScrollView>
-                    {/* Image counter */}
-                    <View className="absolute bottom-4 right-4 bg-black/60 px-2 py-1 rounded-full">
-                      <Text className="text-white text-xs">
-                        {activeImageIndex + 1}/{property.images.length}
-                      </Text>
-                    </View>
-                  </>
-                ) : (
-                  <View className="w-full h-72 bg-gray-200 dark:bg-gray-700 items-center justify-center">
-                    <Ionicons name="image-outline" size={48} color="#9CA3AF" />
-                  </View>
-                )}
-              </View>
-
-              {/* Content */}
-              <View className="p-6">
-                {/* Title and Price Row */}
-                <View className="flex-row justify-between items-start mb-4">
-                  <View className="flex-1">
-                    <Text className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
-                      {property.title}
-                    </Text>
-                    <Text className="text-xl font-bold text-[#FF8E01]">
-                      ETB {property.price?.toLocaleString()}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    onPress={onFavourite}
-                    className="bg-gray-100 dark:bg-gray-800 p-3 rounded-full"
-                  >
-                    <Ionicons
-                      name={favouriteOn ? "heart" : "heart-outline"}
-                      size={24}
-                      color={favouriteOn ? "#EF4444" : "#6B7280"}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Location */}
-                {locationString && (
-                  <View className="flex-row items-start mb-4">
-                    <Ionicons
-                      name="location-outline"
-                      size={20}
-                      color="#6B7280"
-                    />
-                    <Text className="text-gray-600 dark:text-gray-300 ml-2 flex-1">
-                      {locationString}
-                    </Text>
-                  </View>
-                )}
-
-                {/* Property Details */}
-                {(property.propertyType?.name ||
-                  property.status ||
-                  Object.keys(validTypeSpecificFields).length > 0) && (
-                  <View className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl mb-4">
-                    <Text className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
-                      Property Details
-                    </Text>
-                    <View className="flex-row flex-wrap">
-                      {property.propertyType?.name && (
-                        <View className="w-1/2 mb-3">
-                          <Text className="text-gray-500 dark:text-gray-400">
-                            Type
-                          </Text>
-                          <Text className="text-gray-800 dark:text-white font-medium">
-                            {property.propertyType.name}
-                          </Text>
-                        </View>
-                      )}
-                      {property.status && (
-                        <View className="w-1/2 mb-3">
-                          <Text className="text-gray-500 dark:text-gray-400">
-                            Status
-                          </Text>
-                          <Text className="text-gray-800 dark:text-white font-medium capitalize">
-                            {property.status}
-                          </Text>
-                        </View>
-                      )}
-                      {Object.entries(validTypeSpecificFields).map(
-                        ([key, value]) => (
-                          <View key={key} className="w-1/2 mb-3">
-                            <Text className="text-gray-500 dark:text-gray-400 capitalize">
-                              {key.replace(/([A-Z])/g, " $1").trim()}
-                            </Text>
-                            <Text className="text-gray-800 dark:text-white font-medium">
-                              {value} {key.includes("area") ? "m²" : ""}
-                            </Text>
-                          </View>
-                        )
-                      )}
-                    </View>
-                  </View>
-                )}
-
-                {/* Description */}
-                {property.description && (
-                  <View className="mb-6">
-                    <Text className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                      Description
-                    </Text>
-                    <Text className="text-gray-600 dark:text-gray-300">
-                      {property.description}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </ScrollView>
-
-            {/* Bottom Action Button */}
-            <View className="p-5 border-t border-gray-200 dark:border-gray-800">
-              {property?.property_use === "rent" ? (
-                // For Rental Properties - Show Contact Info
-                <View className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
-                  <Text
-                    className="text-gray-800 dark:text-white font-semibold mb-2"
-                    onPress={() => console.log(property.owner)}
-                  >
-                    Contact Owner
-                  </Text>
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center">
-                      <Ionicons name="call-outline" size={20} color="#6B7280" />
-                      <Text className="text-gray-600 dark:text-gray-300 ml-2">
-                        {property?.owner?.phone || "Phone not available"}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() =>
-                        Linking.openURL(`tel:${property?.owner?.phone}`)
-                      }
-                      className="bg-[#FF8E01] px-4 py-2 rounded-lg"
-                    >
-                      <Text className="text-white font-medium">Call Now</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ) : // For Sale Properties - Show Payment Options
-              showPaymentOptions ? (
-                <View>
-                  <PaymentMethodSelector
-                    paymentMethod={paymentMethod}
-                    setPaymentMethod={setPaymentMethod}
-                  />
-                  <TouchableOpacity
-                    onPress={onBuy}
-                    disabled={isPurchasing}
-                    className={`${
-                      isPurchasing ? "bg-gray-400" : "bg-[#FF8E01]"
-                    } rounded-xl py-4 px-6`}
-                  >
-                    {isPurchasing ? (
-                      <ActivityIndicator color="white" />
-                    ) : (
-                      <Text className="text-white text-center font-semibold text-base">
-                        Confirm Purchase
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <TouchableOpacity
-                  onPress={() => setShowPaymentOptions(true)}
-                  className="bg-[#FF8E01] rounded-xl py-4 px-6"
-                >
-                  <Text className="text-white text-center font-semibold text-base">
-                    Buy Property
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </View>
-      </Modal>
-    );
-  }
-);
-
-// Memoize PaymentMethodSelector
-const PaymentMethodSelector = memo(({ paymentMethod, setPaymentMethod }) => (
-  <View className="mb-4">
-    <Text className="text-gray-800 dark:text-white font-semibold mb-2">
-      Select Payment Method
-    </Text>
-    {["cash", "bank_transfer", "mortgage"].map((method) => (
-      <TouchableOpacity
-        key={method}
-        onPress={() => setPaymentMethod(method)}
-        className={`flex-row items-center p-4 rounded-xl mb-2 ${
-          paymentMethod === method
-            ? "bg-blue-100 dark:bg-blue-900"
-            : "bg-gray-100 dark:bg-gray-800"
-        }`}
-      >
-        <Ionicons
-          name={
-            method === "cash"
-              ? "cash-outline"
-              : method === "bank_transfer"
-              ? "card-outline"
-              : "business-outline"
-          }
-          size={24}
-          color={paymentMethod === method ? "#3B82F6" : "#6B7280"}
-        />
-        <Text
-          className={`ml-3 capitalize ${
-            paymentMethod === method
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-gray-600 dark:text-gray-400"
-          }`}
-        >
-          {method.replace("_", " ")}
-        </Text>
-      </TouchableOpacity>
-    ))}
-  </View>
-));
-
-// Add this new component for section headers
-const SectionHeader = memo(({ title, onSeeAll }) => (
-  <View className="flex-row justify-between items-center mb-3 px-5">
-    <Text className="text-lg font-bold dark:text-white">{title}</Text>
-    <TouchableOpacity onPress={onSeeAll}>
-      <Text className="text-blue-600 dark:text-blue-400">See All</Text>
-    </TouchableOpacity>
-  </View>
-));
-
-// Filter UI pieces (Option and Modal) mirrored from explore.js
-const FilterOption = memo(({ icon, label, children }) => (
-  <View className="mb-6">
-    <Text className="text-gray-600 dark:text-gray-300 text-sm mb-2 flex-row items-center">
-      <Ionicons name={icon} size={16} color="#6B7280" style={{ marginRight: 8 }} />
-      {label}
-    </Text>
-    {children}
-  </View>
-));
-
-const FilterModal = memo(
-  ({ visible, onClose, filterValues, onChangeFilter, onSubmit }) => {
-    const propertyUseOptions = [
-      { label: "All", value: "" },
-      { label: "Rent", value: "rent" },
-      { label: "Sell", value: "sell" },
-    ];
-
-    return (
-      <Modal animationType="none" transparent={true} visible={visible} onRequestClose={onClose}>
-        <View className="flex-1 bg-black/20">
-          <View className="flex-1 bg-white dark:bg-gray-900 mt-24 rounded-t-3xl">
-            {/* Modal Header */}
-            <View className="relative border-b border-gray-200 dark:border-gray-800 p-6">
-              <TouchableOpacity onPress={onClose} className="absolute right-6 top-6 z-50 p-2">
-                <Ionicons name="close" size={24} color="#6B7280" />
-              </TouchableOpacity>
-              <Text className="text-gray-800 dark:text-white font-semibold" style={{ fontSize: SCREEN_WIDTH * 0.045 }}>
-                Filter Properties
-              </Text>
-              <Text className="text-gray-500 dark:text-gray-400 mt-1" style={{ fontSize: SCREEN_WIDTH * 0.035 }}>
-                Customize your search preferences
-              </Text>
-            </View>
-
-            {/* Filter Content */}
-            <ScrollView className="p-6" showsVerticalScrollIndicator={false}>
-              {/* Limit */}
-              <FilterOption icon="filter-outline" label="Number of Results">
-                <View className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                  <TextInput
-                    placeholder={`Current limit: ${filterValues.limit}`}
-                    keyboardType="numeric"
-                    value={filterValues.limit.toString()}
-                    onChangeText={(text) => onChangeFilter.setLimit(text)}
-                    className="text-gray-700 dark:text-gray-300 text-base"
-                    placeholderTextColor="#A0AEC0"
-                  />
-                </View>
-              </FilterOption>
-
-              {/* Price Range */}
-              <FilterOption icon="cash-outline" label="Price Range">
-                <View className="flex-row space-x-4">
-                  <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                    <TextInput
-                      placeholder="Min Price"
-                      keyboardType="numeric"
-                      value={filterValues.minPrice.toString()}
-                      onChangeText={(text) => onChangeFilter.setMinPrice(text)}
-                      className="text-gray-700 dark:text-gray-300"
-                      placeholderTextColor="#A0AEC0"
-                    />
-                  </View>
-                  <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                    <TextInput
-                      placeholder="Max Price"
-                      keyboardType="numeric"
-                      value={filterValues.maxPrice.toString()}
-                      onChangeText={(text) => onChangeFilter.setMaxPrice(text)}
-                      className="text-gray-700 dark:text-gray-300"
-                      placeholderTextColor="#A0AEC0"
-                    />
-                  </View>
-                </View>
-              </FilterOption>
-
-              {/* Location Filters Group */}
-              <View className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6">
-                <Text className="text-gray-800 dark:text-white font-semibold mb-4 flex-row items-center">
-                  <Ionicons name="location" size={18} color="#6B7280" style={{ marginRight: 8 }} />
-                  Location Details
-                </Text>
-
-                {/* Region Picker */}
-                <View className="mb-4">
-                  <Text className="text-gray-600 dark:text-gray-400 text-sm mb-2">Region</Text>
-                  <View className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                    <Picker
-                      selectedValue={filterValues.region}
-                      onValueChange={(value) => onChangeFilter.setRegion(value)}
-                      style={{ height: 50, width: "100%" }}
-                    >
-                      <Picker.Item label="Select Region" value="" />
-                      {filterValues.regions?.map((region) => (
-                        <Picker.Item key={region._id} label={region.region_name} value={region._id} />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-
-                {/* Sub Region Picker */}
-                <View className="mb-4">
-                  <Text className="text-gray-600 dark:text-gray-400 text-sm mb-2">Sub Region</Text>
-                  <View
-                    className={`bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 ${
-                      !filterValues.region ? "opacity-50" : ""
-                    }`}
-                  >
-                    <Picker
-                      selectedValue={filterValues.subregion}
-                      onValueChange={(value) => onChangeFilter.setSubregion(value)}
-                      style={{ height: 50, width: "100%" }}
-                      enabled={!!filterValues.region}
-                    >
-                      <Picker.Item label="Select Sub Region" value="" />
-                      {filterValues.filteredSubRegions?.map((subRegion) => (
-                        <Picker.Item key={subRegion._id} label={subRegion.subregion_name} value={subRegion._id} />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-
-                {/* Location Picker */}
-                <View>
-                  <Text className="text-gray-600 dark:text-gray-400 text-sm mb-2">Location</Text>
-                  <View
-                    className={`bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 ${
-                      !filterValues.subregion ? "opacity-50" : ""
-                    }`}
-                  >
-                    <Picker
-                      selectedValue={filterValues.location}
-                      onValueChange={(value) => onChangeFilter.setLocation(value)}
-                      style={{ height: 50, width: "100%" }}
-                      enabled={!!filterValues.subregion}
-                    >
-                      <Picker.Item label="Select Location" value="" />
-                      {filterValues.filteredLocations?.map((location) => (
-                        <Picker.Item key={location._id} label={location.location} value={location._id} />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-              </View>
-
-              {/* Property Type */}
-              <View className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6">
-                <Text className="text-gray-800 dark:text-white font-semibold mb-4 flex-row items-center">
-                  <Ionicons name="home" size={18} color="#6B7280" style={{ marginRight: 8 }} />
-                  Property Details
-                </Text>
-
-                <View>
-                  <Text className="text-gray-600 dark:text-gray-400 text-sm mb-2">Property Type</Text>
-                  <View className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                    <Picker
-                      selectedValue={filterValues.propertyType}
-                      onValueChange={(value) => onChangeFilter.setPropertyType(value)}
-                      style={{ height: 50, width: "100%" }}
-                    >
-                      <Picker.Item label="Select Property Type" value="" />
-                      {filterValues.propertyTypes?.map((type) => (
-                        <Picker.Item key={type._id} label={type.name} value={type._id} />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-              </View>
-
-              {/* Property Use Selection */}
-              <FilterOption icon="repeat-outline" label="Property Use">
-                <View className="flex-row flex-wrap gap-2">
-                  {propertyUseOptions?.map((option) => (
-                    <TouchableOpacity
-                      key={option.value}
-                      onPress={() => onChangeFilter.setPropertyUse(option.value)}
-                      className={`px-4 py-2 rounded-xl ${
-                        filterValues.propertyUse === option.value
-                          ? "bg-[#FF8E01] border-[#FF8E01]"
-                          : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                      } border`}
-                    >
-                      <Text
-                        className={`${
-                          filterValues.propertyUse === option.value
-                            ? "text-white"
-                            : "text-gray-700 dark:text-gray-300"
-                        } font-medium`}
-                      >
-                        {option.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </FilterOption>
-            </ScrollView>
-
-            {/* Action Buttons */}
-            <View className="p-6 border-t border-gray-200 dark:border-gray-800">
-              <View className="flex-row space-x-4">
-                <TouchableOpacity onPress={onClose} className="flex-1 bg-gray-100 dark:bg-gray-800 p-4 rounded-xl">
-                  <Text className="text-gray-700 dark:text-gray-300 text-center font-medium">Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={onSubmit} className="flex-1 bg-[#FF8E01] p-4 rounded-xl">
-                  <Text className="text-white text-center font-medium">Apply Filters</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    );
-  }
-);
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -1042,111 +263,19 @@ const Home = () => {
       params: {
         ...(cleanedObj.propertyType ? { filterType: cleanedObj.propertyType } : {}),
         ...(cleanedObj.propertyUse ? { propertyUse: cleanedObj.propertyUse } : {}),
+        ...(searchQuery ? { search: searchQuery } : {}),
       },
     });
 
     setFilterModalVisible(false);
-  }, [limit, minPrice, maxPrice, location, propertyType, propertyUse, region, subregion]);
+  }, [limit, minPrice, maxPrice, location, propertyType, propertyUse, region, subregion, searchQuery]);
 
-  const categories = [
-    {
-      icon: "home-outline",
-      label: t("apartment"),
-      type: "Apartment",
-      color: "#FF8E01", // or any color you prefer
+  const handleSearchSubmit = useCallback(
+    (text) => {
+      const q = typeof text === "string" ? text : searchQuery;
+      router.push({ pathname: "/(tabs)/explore", params: { search: q } });
     },
-    {
-      icon: "car-outline",
-      label: t("cars"),
-      type: "Vehicle",
-      color: "#4CAF50",
-    },
-    {
-      icon: "map-outline",
-      label: t("land"),
-      type: "Land",
-      color: "#2196F3",
-    },
-    {
-      icon: "business-outline",
-      label: t("villa"),
-      type: "Villa",
-      color: "#9C27B0",
-    },
-    {
-      icon: "storefront-outline",
-      label: t("commercial"),
-      type: "Commercial",
-      color: "#E91E63",
-    },
-    {
-      icon: "grid-outline",
-      label: t("office"),
-      type: "Office",
-      color: "#FF5722",
-    },
-    {
-      icon: "home",
-      label: t("houses"),
-      type: "House",
-      color: "#795548",
-    },
-  ];
-
-  const handleCategoryPress = (category) => {
-    router.push({
-      pathname: "/(tabs)/explore",
-      params: { filterType: category.type },
-    });
-  };
-
-  const renderCategory = ({ item }) => (
-    <TouchableOpacity
-      className="items-center mx-3 mb-4"
-      onPress={() => handleCategoryPress(item)}
-    >
-      <View
-        style={{
-          width: CATEGORY_ICON_SIZE * 1.5,
-          height: CATEGORY_ICON_SIZE * 1.5,
-          backgroundColor: `${item.color}15`,
-          borderWidth: 1,
-          borderColor: `${item.color}30`,
-        }}
-        className="rounded-2xl mb-1 items-center justify-center"
-      >
-        <Ionicons
-          name={item.icon}
-          size={CATEGORY_ICON_SIZE}
-          color={item.color}
-        />
-      </View>
-      <Text
-        style={{ fontSize: SCREEN_WIDTH * 0.03 }}
-        className="text-gray-600 dark:text-gray-300 mt-1"
-      >
-        {item.label}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  const handleSeeAll = (propertyUse) => {
-    console.log(propertyUse);
-    router.push({
-      pathname: "/(tabs)/explore",
-      params: { propertyUse },
-    });
-  };
-
-  const renderPropertyItem = useCallback(
-    ({ item }) => (
-      <PropertyItem
-        item={item}
-        onPress={handlePress}
-        onFavorite={handleFavourite}
-      />
-    ),
-    [handlePress, handleFavourite]
+    [searchQuery]
   );
 
   useEffect(() => {
@@ -1163,6 +292,13 @@ const Home = () => {
     setShowPaymentOptions(false);
     setPaymentMethod("cash");
   }, []);
+
+  const handleSeeAll = (propertyUse) => {
+    router.push({
+      pathname: "/(tabs)/explore",
+      params: { propertyUse },
+    });
+  };
 
   return (
     <View className="bg-slate-300 dark:bg-[#09092B] flex-1">
@@ -1242,39 +378,15 @@ const Home = () => {
           paddingBottom: 100,
         }}
       >
-        {/* Search with Filter */}
+        {/* Search with Filter (extracted) */}
         <View className="px-5 mt-4 mb-2">
-          <View className="flex-row items-center bg-white dark:bg-gray-800 rounded-2xl px-3 py-2">
-            <Ionicons name="search-outline" size={20} color="#6B7280" />
-            <TextInput
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Search properties"
-              placeholderTextColor="#9CA3AF"
-              className="flex-1 ml-2 text-gray-800 dark:text-gray-100"
-            />
-            <TouchableOpacity
-              onPress={() => setFilterModalVisible(true)}
-              className="ml-2 p-2 rounded-xl bg-gray-100 dark:bg-gray-700"
-            >
-              <Ionicons name="options-outline" size={20} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Categories - replaced by search+filter UI above */}
-        {/* <View className="mt-6">
-          <FlatList
-            data={categories}
-            renderItem={renderCategory}
-            keyExtractor={(item) => item.type}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-            }}
+          <SearchBarWithFilter
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onOpenFilter={() => setFilterModalVisible(true)}
+            onSubmit={handleSearchSubmit}
           />
-        </View> */}
+        </View>
 
         {/* Featured Listings */}
         <View className="mb-6">
@@ -1285,7 +397,16 @@ const Home = () => {
           <FlatList
             data={featuredProperties}
             keyExtractor={(item) => item._id}
-            renderItem={renderPropertyItem}
+            renderItem={useCallback(
+              ({ item }) => (
+                <PropertyItem
+                  item={item}
+                  onPress={handlePress}
+                  onFavorite={handleFavourite}
+                />
+              ),
+              [handlePress, handleFavourite]
+            )}
             horizontal
             showsHorizontalScrollIndicator={false}
             removeClippedSubviews={true}
@@ -1322,7 +443,16 @@ const Home = () => {
           <FlatList
             data={propertiesByUse.sell}
             keyExtractor={(item) => item._id}
-            renderItem={renderPropertyItem}
+            renderItem={useCallback(
+              ({ item }) => (
+                <PropertyItem
+                  item={item}
+                  onPress={handlePress}
+                  onFavorite={handleFavourite}
+                />
+              ),
+              [handlePress, handleFavourite]
+            )}
             horizontal
             showsHorizontalScrollIndicator={false}
             removeClippedSubviews={true}
@@ -1349,7 +479,16 @@ const Home = () => {
           <FlatList
             data={propertiesByUse.rent}
             keyExtractor={(item) => item._id}
-            renderItem={renderPropertyItem}
+            renderItem={useCallback(
+              ({ item }) => (
+                <PropertyItem
+                  item={item}
+                  onPress={handlePress}
+                  onFavorite={handleFavourite}
+                />
+              ),
+              [handlePress, handleFavourite]
+            )}
             horizontal
             showsHorizontalScrollIndicator={false}
             removeClippedSubviews={true}

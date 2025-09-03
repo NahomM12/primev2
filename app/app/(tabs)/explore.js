@@ -121,6 +121,16 @@ const PropertyImages = memo(({ images }) => {
   );
 });
 
+// Helper to format location string
+const getLocationString = (item) => {
+  return [
+    item?.address?.subregion?.subregion_name,
+    item?.address?.location?.location,
+  ]
+    .filter(Boolean)
+    .join(", ");
+};
+
 // Memoize the property card component
 const PropertyCard = memo(({ item, onPress, onFavorite }) => (
   <TouchableOpacity
@@ -157,25 +167,25 @@ const PropertyCard = memo(({ item, onPress, onFavorite }) => (
               className="text-blue-600 dark:text-blue-400 font-bold"
               style={{ fontSize: SCREEN_WIDTH * 0.045 }}
             >
-              ${item.price}
+              ETB {item.price?.toLocaleString?.() || item.price}
             </Text>
             <View className="bg-green-100 dark:bg-green-900 px-2 py-1 rounded-full">
               <Text
                 className="text-green-600 dark:text-green-400 font-medium"
                 style={{ fontSize: SCREEN_WIDTH * 0.03 }}
               >
-                Available
+                {item.status ? item.status : "Available"}
               </Text>
             </View>
           </View>
 
-          {/* Property Name */}
+          {/* Property Title */}
           <Text
             className="font-bold text-gray-800 dark:text-white mb-1"
             style={{ fontSize: SCREEN_WIDTH * 0.04 }}
             numberOfLines={1}
           >
-            {item.name}
+            {item.title}
           </Text>
 
           {/* Location */}
@@ -190,7 +200,7 @@ const PropertyCard = memo(({ item, onPress, onFavorite }) => (
               style={{ fontSize: SCREEN_WIDTH * 0.035 }}
               numberOfLines={1}
             >
-              {item.location}
+              {getLocationString(item)}
             </Text>
           </View>
         </View>
@@ -606,7 +616,7 @@ const PropertyModal = memo(
                 <View className="flex-row justify-between items-start mb-4">
                   <View className="flex-1">
                     <Text className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
-                      {property.name}
+                      {property.title}
                     </Text>
                     <Text className="text-xl font-bold text-[#FF8E01]">
                       ETB {property.price?.toLocaleString()}
@@ -816,7 +826,7 @@ const Explore = () => {
   }, []);
 
   useEffect(() => {
-    const { filterType, propertyUse } = params;
+    const { filterType, propertyUse, search } = params;
 
     let newFilters = {};
 
@@ -830,6 +840,10 @@ const Explore = () => {
       newFilters.propertyUse = propertyUse;
     }
 
+    if (search) {
+      newFilters.search = search;
+    }
+
     // Remove empty filters
     Object.keys(newFilters).forEach((key) => {
       if (!newFilters[key]) {
@@ -838,7 +852,7 @@ const Explore = () => {
     });
 
     dispatch(getAllProperties(newFilters));
-  }, [params.filterType, params.propertyUse]);
+  }, [params.filterType, params.propertyUse, params.search]);
 
   useEffect(() => {
     if (region) {
@@ -962,6 +976,7 @@ const Explore = () => {
       propertyUse,
       region,
       subregion,
+      search: params.search || undefined,
     };
 
     // Remove undefined, null, or empty string values
@@ -984,68 +999,8 @@ const Explore = () => {
     propertyUse,
     region,
     subregion,
+    params.search,
   ]);
-
-  useEffect(() => {
-    if (!propertyDetailModalVisible) {
-      setSelectedProperty(null);
-      setShowPaymentOptions(false);
-      setPaymentMethod("cash");
-    }
-  }, [propertyDetailModalVisible]);
-
-  const PaymentMethodSelector = memo(({ paymentMethod, setPaymentMethod }) => (
-    <View className="mb-4">
-      <Text className="text-gray-800 dark:text-white font-semibold mb-2">
-        Select Payment Method
-      </Text>
-      {["cash", "bank_transfer", "mortgage"]?.map((method) => (
-        <TouchableOpacity
-          key={method}
-          onPress={() => setPaymentMethod(method)}
-          className={`flex-row items-center p-4 rounded-xl mb-2 ${
-            paymentMethod === method
-              ? "bg-blue-100 dark:bg-blue-900"
-              : "bg-gray-100 dark:bg-gray-800"
-          }`}
-        >
-          <Ionicons
-            name={
-              method === "cash"
-                ? "cash-outline"
-                : method === "bank_transfer"
-                ? "card-outline"
-                : "business-outline"
-            }
-            size={24}
-            color={paymentMethod === method ? "#3B82F6" : "#6B7280"}
-          />
-          <Text
-            className={`ml-3 capitalize ${
-              paymentMethod === method
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-gray-600 dark:text-gray-400"
-            }`}
-          >
-            {method.replace("_", " ")}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  ));
-
-  const renderProperties = useCallback(
-    ({ item }) => (
-      <PropertyCard
-        item={item}
-        onPress={handlePress}
-        onFavorite={handleFavourite}
-      />
-    ),
-    [handlePress, handleFavourite]
-  );
-
-  const keyExtractor = useCallback((item) => item._id, []);
 
   useEffect(() => {
     const obj = {
@@ -1054,6 +1009,7 @@ const Explore = () => {
       maxPrice: maxPrice ? parseInt(maxPrice) : undefined,
       location,
       propertyType,
+      search: params.search || undefined,
     };
     dispatch(getAllProperties(obj));
   }, []);
@@ -1096,8 +1052,17 @@ const Explore = () => {
 
       <FlatList
         data={properties?.properties}
-        keyExtractor={keyExtractor}
-        renderItem={renderProperties}
+        keyExtractor={useCallback((item) => item._id, [])}
+        renderItem={useCallback(
+          ({ item }) => (
+            <PropertyCard
+              item={item}
+              onPress={handlePress}
+              onFavorite={handleFavourite}
+            />
+          ),
+          [handlePress, handleFavourite]
+        )}
         contentContainerStyle={{
           paddingVertical: SCREEN_WIDTH * 0.025,
         }}

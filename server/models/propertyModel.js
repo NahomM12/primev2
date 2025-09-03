@@ -99,6 +99,9 @@ const propertySchema = new mongoose.Schema(
   }
 );
 
+// Index title for faster regex/text search on titles
+propertySchema.index({ title: 1 });
+
 // Middleware to validate type-specific fields before saving
 propertySchema.pre("save", async function (next) {
   try {

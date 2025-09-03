@@ -109,6 +109,11 @@ const getAllProperties = asyncHandler(async (req, res) => {
     ];
     excludeFields.forEach((el) => delete queryObj[el]);
 
+    // Title search via regex (case-insensitive)
+    if (req.query.search && typeof req.query.search === "string") {
+      queryObj.title = { $regex: req.query.search, $options: "i" };
+    }
+
     if (req.query.region) {
       queryObj["address.region"] = req.query.region;
     }
