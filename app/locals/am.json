@@ -1,0 +1,31 @@
+{
+  "welcome": "አንኳን ደህና መጡ",
+  "location": "Location",
+  "available_for_sell": "ለሽያጭ የቀረቡ",
+  "available_for_rent": "ለኪራይ የቀረቡ",
+  "featured_listings": "የተመረጡ ንብርቶች",
+  "apartment": "ኣፓርትመንት",
+  "cars": "መኪና",
+  "land": "መሬት",
+  "villa": "ቪላ",
+  "commercial": "ንግድ",
+  "office": "ቢሮ",
+  "houses": "ቤት",
+  "become_seller": "ሻጭ ይሁኑ",
+  "seller_dashboard": "ወደ ሻጭ ዳሽቦርድ ይሂዱ",
+  "buyer_dashboard": "ወደ ገዥ ቅጽ ይሂዱ",
+
+  "total_properties": "ጠቅላላ ንብረቶች",
+  "total_views": "ጠቅላላ የታየው",
+  "total_favourites": "ጠቅላላ የመረጠው",
+  "active_listing": "Active Listing",
+
+  "property_distribution": "Property Distribution",
+  "active": "Active",
+  "pending": "እይታ ላይ ያሉ",
+  "rejected": "ዉድቅ የተደረጉ",
+
+  "quick_actions": "ፈጣን ",
+  "add_property": "ንብረት መጨመር",
+  "account_setting": "Account Setting"
+}
