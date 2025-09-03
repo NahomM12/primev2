@@ -69,6 +69,7 @@ const getAllProperties = async ({
   propertyUse,
   region,
   subregion,
+  title,
 }) => {
   const userData = await AsyncStorage.getItem("user");
   const getTokenFromLocalStorage = userData ? JSON.parse(userData) : null;
@@ -90,6 +91,7 @@ const getAllProperties = async ({
   if (location) params.append("address.location", location);
   if (propertyType) params.append("propertyType", propertyType);
   if (propertyUse) params.append("property_use", propertyUse);
+  if (title) params.append("title", title);
 
   const response = await axios.get(
     `${baseUrl}/property/all-properties?${params.toString()}`,

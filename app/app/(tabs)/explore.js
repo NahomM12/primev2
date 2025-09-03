@@ -826,7 +826,7 @@ const Explore = () => {
   }, []);
 
   useEffect(() => {
-    const { filterType, propertyUse, search } = params;
+    const { filterType, propertyUse, search, title } = params;
 
     let newFilters = {};
 
@@ -840,11 +840,12 @@ const Explore = () => {
       newFilters.propertyUse = propertyUse;
     }
 
-    if (search) {
+    if (title) {
+      newFilters.title = title;
+    } else if (search) {
       newFilters.search = search;
     }
 
-    // Remove empty filters
     Object.keys(newFilters).forEach((key) => {
       if (!newFilters[key]) {
         delete newFilters[key];
@@ -852,7 +853,26 @@ const Explore = () => {
     });
 
     dispatch(getAllProperties(newFilters));
-  }, [params.filterType, params.propertyUse, params.search]);
+  }, [params.filterType, params.propertyUse, params.search, params.title]);
+
+  useEffect(() => {
+    // Only run the initial fetch if there are no incoming filter params
+    const hasIncomingParams = Boolean(
+      params.filterType || params.propertyUse || params.search || params.title
+    );
+    if (hasIncomingParams) return;
+
+    const obj = {
+      limit: parseInt(limit),
+      minPrice: minPrice ? parseInt(minPrice) : undefined,
+      maxPrice: maxPrice ? parseInt(maxPrice) : undefined,
+      location,
+      propertyType,
+      // include title if provided (unlikely on first mount without params)
+      title: params.title || undefined,
+    };
+    dispatch(getAllProperties(obj));
+  }, []);
 
   useEffect(() => {
     if (region) {
@@ -860,23 +880,16 @@ const Explore = () => {
         (subRegion) => subRegion.region_id?._id === region
       );
       setFilteredSubRegions(regionSubRegions);
-      // Reset dependent fields
-      // setRegion("");
-      // setLocation("");
       setFilteredLocations([]);
     }
   }, [region, subregions]);
 
-  // Handle subregion selection
   useEffect(() => {
     if (subregion) {
-      // console.log("subRegionLocations");
       const subRegionLocations = locations.filter(
         (location) => location?.subregion_id?._id === subregion
       );
-      console.log(subRegionLocations);
       setFilteredLocations(subRegionLocations);
-      // setLocation("");
     }
   }, [subregion, region, locations]);
 
@@ -1001,18 +1014,6 @@ const Explore = () => {
     subregion,
     params.search,
   ]);
-
-  useEffect(() => {
-    const obj = {
-      limit: parseInt(limit),
-      minPrice: minPrice ? parseInt(minPrice) : undefined,
-      maxPrice: maxPrice ? parseInt(maxPrice) : undefined,
-      location,
-      propertyType,
-      search: params.search || undefined,
-    };
-    dispatch(getAllProperties(obj));
-  }, []);
 
   return (
     <View className="bg-slate-300 dark:bg-[#09092B] w-full min-h-screen p-5">

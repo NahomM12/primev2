@@ -114,7 +114,6 @@ const Home = () => {
 
   const { t, i18n } = useTranslation();
 
-  // Keep filtered lists in sync
   useEffect(() => {
     if (region) {
       const regionSubRegions = subregions.filter(
@@ -137,18 +136,17 @@ const Home = () => {
     }
   }, [subregion, locations]);
 
-  // Memoize callback functions
   const handleFavourite = useCallback(
     async (prop) => {
       try {
-        setFavouriteOn(!favouriteOn); // Immediately update UI
+        setFavouriteOn(!favouriteOn);
         const data = {
           prodId: prop._id,
         };
         await dispatch(addToWishlist(data)).unwrap();
       } catch (error) {
         console.error("Error updating favorite:", error);
-        setFavouriteOn(favouriteOn); // Revert on error
+        setFavouriteOn(favouriteOn);
       }
     },
     [favouriteOn, dispatch]
@@ -165,10 +163,8 @@ const Home = () => {
         setModalVisible(true);
         setShowPaymentOptions(false);
 
-        // Dispatch the view change and handle any errors
         await dispatch(changeView(data)).unwrap();
       } catch (error) {
-        // Silently handle the error or show a toast message
         console.log("Error updating view:", error);
       }
     },
@@ -207,7 +203,6 @@ const Home = () => {
               setModalVisible(false);
               setShowPaymentOptions(false);
               setPaymentMethod("cash");
-              // Refresh properties list
               dispatch(getPropertiesByUse(selectedProperty.property_use));
             },
           },
@@ -237,7 +232,6 @@ const Home = () => {
     );
   };
 
-  // New: Filter submit mirrors explore behavior; navigate to Explore with params
   const handleFilterSubmit = useCallback(() => {
     const obj = {
       limit: parseInt(limit),
@@ -248,6 +242,7 @@ const Home = () => {
       propertyUse,
       region,
       subregion,
+      title: searchQuery || undefined,
     };
 
     const cleanedObj = Object.entries(obj).reduce((acc, [key, value]) => {
@@ -257,13 +252,12 @@ const Home = () => {
       return acc;
     }, {});
 
-    // Navigate to Explore; Explore already reacts to propertyUse and propertyType
     router.push({
       pathname: "/(tabs)/explore",
       params: {
         ...(cleanedObj.propertyType ? { filterType: cleanedObj.propertyType } : {}),
         ...(cleanedObj.propertyUse ? { propertyUse: cleanedObj.propertyUse } : {}),
-        ...(searchQuery ? { search: searchQuery } : {}),
+        ...(cleanedObj.title ? { title: cleanedObj.title } : {}),
       },
     });
 
@@ -273,7 +267,7 @@ const Home = () => {
   const handleSearchSubmit = useCallback(
     (text) => {
       const q = typeof text === "string" ? text : searchQuery;
-      router.push({ pathname: "/(tabs)/explore", params: { search: q } });
+      router.push({ pathname: "/(tabs)/explore", params: { title: q } });
     },
     [searchQuery]
   );
@@ -303,65 +297,20 @@ const Home = () => {
   return (
     <View className="bg-slate-300 dark:bg-[#09092B] flex-1">
       <View className="px-5 pt-5">
-        {/* Header with Language Selection and Notification */}
+        {/* Header */}
         <View className="flex flex-row justify-between items-center mb-4">
-          <Text
-            className="text-2xl font-bold dark:text-slate-300"
-            onPress={() => console.log(views)}
-          >
-            Prime Property
-          </Text>
+          <Text className="text-2xl font-bold dark:text-slate-300">Prime Property</Text>
           <View className="flex-row items-center">
             <View className="flex-row bg-white/90 dark:bg-gray-800/90 rounded-full mr-3 overflow-hidden">
-              <TouchableOpacity
-                onPress={() => handleLanguageChange("Eng")}
-                className="px-3 py-1"
-                style={{
-                  backgroundColor:
-                    i18n.language === "Eng" ? "#FF8E01" : "transparent",
-                }}
-              >
-                <Text
-                  className={`${
-                    i18n.language === "Eng"
-                      ? "text-white"
-                      : "text-gray-600 dark:text-gray-300"
-                  }`}
-                >
-                  EN
-                </Text>
+              <TouchableOpacity onPress={() => handleLanguageChange("Eng")} className="px-3 py-1" style={{ backgroundColor: i18n.language === "Eng" ? "#FF8E01" : "transparent" }}>
+                <Text className={`${i18n.language === "Eng" ? "text-white" : "text-gray-600 dark:text-gray-300"}`}>EN</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => handleLanguageChange("Amh")}
-                className="px-3 py-1"
-                style={{
-                  backgroundColor:
-                    i18n.language === "Amh" ? "#FF8E01" : "transparent",
-                }}
-              >
-                <Text
-                  className={`${
-                    i18n.language === "Amh"
-                      ? "text-white"
-                      : "text-gray-600 dark:text-gray-300"
-                  }`}
-                >
-                  አማ
-                </Text>
+              <TouchableOpacity onPress={() => handleLanguageChange("Amh")} className="px-3 py-1" style={{ backgroundColor: i18n.language === "Amh" ? "#FF8E01" : "transparent" }}>
+                <Text className={`${i18n.language === "Amh" ? "text-white" : "text-gray-600 dark:text-gray-300"}`}>አማ</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              className="bg-white/90 dark:bg-gray-800/90 p-2 rounded-full"
-              onPress={() => {
-                router.push("/notification");
-              }}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#6B7280"
-              />
-              {/* Notification badge - if needed */}
+            <TouchableOpacity className="bg-white/90 dark:bg-gray-800/90 p-2 rounded-full" onPress={() => { router.push("/notification"); }}>
+              <Ionicons name="notifications-outline" size={24} color="#6B7280" />
               <View className="absolute -top-1 -right-1 bg-red-500 w-4 h-4 rounded-full items-center justify-center">
                 <Text className="text-white text-xs">2</Text>
               </View>
@@ -370,190 +319,30 @@ const Home = () => {
         </View>
       </View>
 
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        removeClippedSubviews={true}
-        contentContainerStyle={{
-          paddingBottom: 100,
-        }}
-      >
-        {/* Search with Filter (extracted) */}
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} removeClippedSubviews={true} contentContainerStyle={{ paddingBottom: 100 }}>
         <View className="px-5 mt-4 mb-2">
-          <SearchBarWithFilter
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onOpenFilter={() => setFilterModalVisible(true)}
-            onSubmit={handleSearchSubmit}
-          />
+          <SearchBarWithFilter value={searchQuery} onChangeText={setSearchQuery} onOpenFilter={() => setFilterModalVisible(true)} onSubmit={handleSearchSubmit} />
         </View>
 
-        {/* Featured Listings */}
         <View className="mb-6">
-          <SectionHeader
-            title={t("featured_listings")}
-            onSeeAll={() => handleSeeAll("featured")}
-          />
-          <FlatList
-            data={featuredProperties}
-            keyExtractor={(item) => item._id}
-            renderItem={useCallback(
-              ({ item }) => (
-                <PropertyItem
-                  item={item}
-                  onPress={handlePress}
-                  onFavorite={handleFavourite}
-                />
-              ),
-              [handlePress, handleFavourite]
-            )}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={5}
-            windowSize={5}
-            initialNumToRender={3}
-            contentContainerStyle={{
-              paddingHorizontal: SCREEN_WIDTH * 0.04,
-              paddingVertical: 8,
-            }}
-            ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
-            snapToAlignment="start"
-            decelerationRate="fast"
-            snapToInterval={CARD_WIDTH + 16}
-            ListEmptyComponent={() => (
-              <View className="flex items-center justify-center p-4">
-                <Text
-                  className="text-gray-500 dark:text-gray-400"
-                  style={{ fontSize: SCREEN_WIDTH * 0.035 }}
-                >
-                  No featured properties available
-                </Text>
-              </View>
-            )}
-          />
+          <SectionHeader title={t("featured_listings")} onSeeAll={() => handleSeeAll("featured")} />
+          <FlatList data={featuredProperties} keyExtractor={(item) => item._id} renderItem={useCallback(({ item }) => (<PropertyItem item={item} onPress={handlePress} onFavorite={handleFavourite} />), [handlePress, handleFavourite])} horizontal showsHorizontalScrollIndicator={false} removeClippedSubviews={true} maxToRenderPerBatch={5} windowSize={5} initialNumToRender={3} contentContainerStyle={{ paddingHorizontal: SCREEN_WIDTH * 0.04, paddingVertical: 8 }} ItemSeparatorComponent={() => <View style={{ width: 16 }} />} snapToAlignment="start" decelerationRate="fast" snapToInterval={CARD_WIDTH + 16} ListEmptyComponent={() => (<View className="flex items-center justify-center p-4"><Text className="text-gray-500 dark:text-gray-400" style={{ fontSize: SCREEN_WIDTH * 0.035 }}>No featured properties available</Text></View>)} />
         </View>
 
-        {/* Sell Properties Section */}
         <View className="mb-6">
-          <SectionHeader
-            title={t("available_for_sell")}
-            onSeeAll={() => handleSeeAll("sell")}
-          />
-          <FlatList
-            data={propertiesByUse.sell}
-            keyExtractor={(item) => item._id}
-            renderItem={useCallback(
-              ({ item }) => (
-                <PropertyItem
-                  item={item}
-                  onPress={handlePress}
-                  onFavorite={handleFavourite}
-                />
-              ),
-              [handlePress, handleFavourite]
-            )}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={5}
-            windowSize={5}
-            initialNumToRender={3}
-            contentContainerStyle={{
-              paddingHorizontal: SCREEN_WIDTH * 0.04,
-              paddingVertical: 8,
-            }}
-            ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
-            snapToAlignment="start"
-            decelerationRate="fast"
-            snapToInterval={CARD_WIDTH + 16}
-          />
+          <SectionHeader title={t("available_for_sell")} onSeeAll={() => handleSeeAll("sell")} />
+          <FlatList data={propertiesByUse.sell} keyExtractor={(item) => item._id} renderItem={useCallback(({ item }) => (<PropertyItem item={item} onPress={handlePress} onFavorite={handleFavourite} />), [handlePress, handleFavourite])} horizontal showsHorizontalScrollIndicator={false} removeClippedSubviews={true} maxToRenderPerBatch={5} windowSize={5} initialNumToRender={3} contentContainerStyle={{ paddingHorizontal: SCREEN_WIDTH * 0.04, paddingVertical: 8 }} ItemSeparatorComponent={() => <View style={{ width: 16 }} />} snapToAlignment="start" decelerationRate="fast" snapToInterval={CARD_WIDTH + 16} />
         </View>
 
-        {/* Rent Properties Section */}
         <View className="mb-6">
-          <SectionHeader
-            title={t("available_for_rent")}
-            onSeeAll={() => handleSeeAll("rent")}
-          />
-          <FlatList
-            data={propertiesByUse.rent}
-            keyExtractor={(item) => item._id}
-            renderItem={useCallback(
-              ({ item }) => (
-                <PropertyItem
-                  item={item}
-                  onPress={handlePress}
-                  onFavorite={handleFavourite}
-                />
-              ),
-              [handlePress, handleFavourite]
-            )}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={5}
-            windowSize={5}
-            initialNumToRender={3}
-            contentContainerStyle={{
-              paddingHorizontal: SCREEN_WIDTH * 0.04,
-              paddingVertical: 8,
-            }}
-            ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
-            snapToAlignment="start"
-            decelerationRate="fast"
-            snapToInterval={CARD_WIDTH + 16}
-          />
+          <SectionHeader title={t("available_for_rent")} onSeeAll={() => handleSeeAll("rent")} />
+          <FlatList data={propertiesByUse.rent} keyExtractor={(item) => item._id} renderItem={useCallback(({ item }) => (<PropertyItem item={item} onPress={handlePress} onFavorite={handleFavourite} />), [handlePress, handleFavourite])} horizontal showsHorizontalScrollIndicator={false} removeClippedSubviews={true} maxToRenderPerBatch={5} windowSize={5} initialNumToRender={3} contentContainerStyle={{ paddingHorizontal: SCREEN_WIDTH * 0.04, paddingVertical: 8 }} ItemSeparatorComponent={() => <View style={{ width: 16 }} />} snapToAlignment="start" decelerationRate="fast" snapToInterval={CARD_WIDTH + 16} />
         </View>
       </ScrollView>
 
-      {/* Filter Modal */}
-      <FilterModal
-        visible={filterModalVisible}
-        onClose={() => setFilterModalVisible(false)}
-        filterValues={{
-          limit,
-          minPrice,
-          maxPrice,
-          location,
-          propertyType,
-          propertyUse,
-          region,
-          subregion,
-          regions,
-          filteredSubRegions,
-          filteredLocations,
-          propertyTypes,
-        }}
-        onChangeFilter={{
-          setLimit,
-          setMinPrice,
-          setMaxPrice,
-          setLocation,
-          setPropertyType,
-          setPropertyUse,
-          setRegion,
-          setSubregion,
-          setLocation,
-        }}
-        onSubmit={handleFilterSubmit}
-      />
+      <FilterModal visible={filterModalVisible} onClose={() => setFilterModalVisible(false)} filterValues={{ limit, minPrice, maxPrice, location, propertyType, propertyUse, region, subregion, regions, filteredSubRegions, filteredLocations, propertyTypes }} onChangeFilter={{ setLimit, setMinPrice, setMaxPrice, setLocation, setPropertyType, setPropertyUse, setRegion, setSubregion, setLocation }} onSubmit={handleFilterSubmit} />
 
-      {/* Property Detail Modal */}
-      <PropertyModal
-        visible={modalVisible}
-        onClose={handleModalClose}
-        property={selectedProperty}
-        favouriteOn={favouriteOn}
-        onFavourite={handleFavourite}
-        onBuy={handleBuyProperty}
-        onScheduleVisit={handleScheduleVisit}
-        isPurchasing={isPurchasing}
-        showPaymentOptions={showPaymentOptions}
-        setShowPaymentOptions={setShowPaymentOptions}
-        paymentMethod={paymentMethod}
-        setPaymentMethod={setPaymentMethod}
-      />
+      <PropertyModal visible={modalVisible} onClose={handleModalClose} property={selectedProperty} favouriteOn={favouriteOn} onFavourite={handleFavourite} onBuy={handleBuyProperty} onScheduleVisit={handleScheduleVisit} isPurchasing={isPurchasing} showPaymentOptions={showPaymentOptions} setShowPaymentOptions={setShowPaymentOptions} paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod} />
     </View>
   );
 };
