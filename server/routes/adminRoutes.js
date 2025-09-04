@@ -12,6 +12,7 @@ const { authMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.post("/register", register);
+
 router.post("/login", login);
 router.get("/all-users", getAllUsers);
 router.delete("/delete-user/:id", deleteUser);
