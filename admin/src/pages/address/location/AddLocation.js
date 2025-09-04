@@ -22,7 +22,7 @@ const AddLocation = ({ setIsAdd }) => {
   }, [dispatch]);
 
   const filteredSubRegions = subRegions?.filter(
-    (subregion) => subregion.region?.id === formData.region
+    (subregion) => subregion.region_id?._id === formData.region
   );
 
   const handleChange = (e) => {
@@ -36,7 +36,13 @@ const AddLocation = ({ setIsAdd }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(addLocation(formData));
+    console.log(formData);
+    const data = {
+      region_id: formData.region,
+      subregion_id: formData.subregion,
+      location: formData.location,
+    };
+    dispatch(addLocation(data));
     setIsAdd(false);
   };
 
@@ -68,7 +74,7 @@ const AddLocation = ({ setIsAdd }) => {
           >
             <option value="">Select a region</option>
             {regions?.map((region) => (
-              <option key={region.id} value={region.id}>
+              <option key={region._id} value={region._id}>
                 {region.region_name}
               </option>
             ))}
@@ -91,7 +97,7 @@ const AddLocation = ({ setIsAdd }) => {
           >
             <option value="">Select a subregion</option>
             {filteredSubRegions?.map((subregion) => (
-              <option key={subregion.id} value={subregion.id}>
+              <option key={subregion._id} value={subregion._id}>
                 {subregion.subregion_name}
               </option>
             ))}

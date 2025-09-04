@@ -95,9 +95,9 @@ const UserManagement = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers?.map((user) => (
+          {filteredUsers?.map((user, index) => (
             <tr key={user._id}>
-              <td className="border px-4 py-2">{user?.id}</td>
+              <td className="border px-4 py-2">{index + 1}</td>
               <td className="border px-4 py-2">{user?.name}</td>
               <td className="border px-4 py-2">{user?.email}</td>
               <td className="border px-4 py-2">{user?.phone}</td>

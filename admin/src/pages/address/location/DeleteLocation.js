@@ -7,14 +7,16 @@ const DeleteLocation = ({ setIsDelete, selectedLocation }) => {
   const dispatch = useDispatch();
 
   const handleDelete = () => {
-    dispatch(deleteLocation(selectedLocation.id));
+    dispatch(deleteLocation(selectedLocation._id));
     setIsDelete(false);
   };
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
       <div className="flex justify-between items-center p-6 border-b dark:border-gray-700">
-        <h2 className="text-xl font-semibold dark:text-white">Delete Location</h2>
+        <h2 className="text-xl font-semibold dark:text-white">
+          Delete Location
+        </h2>
         <button
           onClick={() => setIsDelete(false)}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
@@ -36,7 +38,8 @@ const DeleteLocation = ({ setIsDelete, selectedLocation }) => {
         </h3>
 
         <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
-          Are you sure you want to delete this location? This action cannot be undone.
+          Are you sure you want to delete this location? This action cannot be
+          undone.
         </p>
 
         <div className="flex justify-end space-x-3">

@@ -1,26 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateProfile } from "../../store/auth/authSlices"
+import { updateProfile } from "../../store/auth/authSlices";
 
 const Profile = () => {
   const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   const [profile, setProfile] = useState({
-    name: user?.name||"",
-    email: user?.email||"",
+    name: user?.name || "",
+    email: user?.email || "",
     password: "",
-  
-  }); 
-const{user}=useSelector(state=>state.auth)
-
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const updatedProfile = { ...profile };
     if (!updatedProfile.password) {
-      delete updatedProfile.password; 
+      delete updatedProfile.password;
     }
     dispatch(updateProfile(updatedProfile));
-
   };
 
   return (
@@ -42,9 +39,7 @@ const{user}=useSelector(state=>state.auth)
           <input
             type="email"
             value={profile.email}
-            onChange={(e) =>
-              setProfile({ ...profile, email: e.target.value })
-            }
+            onChange={(e) => setProfile({ ...profile, email: e.target.value })}
             className="w-full border-gray-300 rounded-md shadow-sm p-2"
             placeholder="Enter your email"
           />
@@ -70,6 +65,6 @@ const{user}=useSelector(state=>state.auth)
       </form>
     </div>
   );
-}
+};
 
 export default Profile;

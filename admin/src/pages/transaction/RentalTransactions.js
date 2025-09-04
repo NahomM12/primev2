@@ -87,7 +87,7 @@ const RentalTransactions = () => {
                 <td className="px-4 py-2">
                   <button
                     onClick={() =>
-                      console.log("View details for:", transaction.id)
+                      console.log("View details for:", transaction._id)
                     }
                     className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
                   >

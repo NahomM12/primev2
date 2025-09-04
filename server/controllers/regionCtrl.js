@@ -23,6 +23,7 @@ const getAllRegions = asyncHandler(async (req, res) => {
 const editRegion = asyncHandler(async (req, res) => {
   // const { id } = req.admin;
   const { addrId } = req.params;
+  console.log(req.params);
   try {
     const region = await Region.findByIdAndUpdate(addrId, req.body, {
       new: true,

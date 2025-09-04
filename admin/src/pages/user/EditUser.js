@@ -5,8 +5,7 @@ import { edituser } from "../../store/user/userSlice";
 const EditUser = ({ setIsEdit, selectedUser }) => {
   const dispatch = useDispatch();
 
-  
-  const [userDetails, setUserDetails] = useState({  
+  const [userDetails, setUserDetails] = useState({
     name: selectedUser?.name || "",
     email: selectedUser?.email || "",
     phone: selectedUser?.phone || "",
@@ -17,13 +16,12 @@ const EditUser = ({ setIsEdit, selectedUser }) => {
     setUserDetails({ ...userDetails, [name]: value });
   };
 
-    const handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const data={
-      id:selectedUser.id,
-      data:userDetails
-
-    }
+    const data = {
+      id: selectedUser._id,
+      data: userDetails,
+    };
     dispatch(edituser(data));
     setIsEdit(false);
   };

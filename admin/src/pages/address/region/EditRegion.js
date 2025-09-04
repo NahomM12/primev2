@@ -20,8 +20,18 @@ const EditRegion = ({ setIsEdit, selectedRegion }) => {
       return;
     }
 
+    const data = {
+      id: selectedRegion._id,
+      data: {
+        region_name: regionName,
+      },
+    };
+
+    console.log(regionName);
+
     // Dispatch the action to update the region
-    dispatch(updateRegion({ id: selectedRegion._id, region_name: regionName }))
+    dispatch(updateRegion(data))
+      .unwrap()
       .then(() => {
         alert("Region updated successfully!");
         setIsEdit(false); // Close the modal
