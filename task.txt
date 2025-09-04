@@ -1,1 +1,4 @@
 modify edit property( type specific fields to show label and also the region subregion and location)
+
+ blue is the new black
+ ball possession is the best defence
