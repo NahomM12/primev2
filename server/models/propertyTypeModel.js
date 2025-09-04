@@ -4,8 +4,8 @@ const basePropertyTypeSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
-      unique: true,
+      // required: true,
+      // unique: true,
     },
     category: {
       type: mongoose.Schema.Types.ObjectId,

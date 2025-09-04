@@ -24,6 +24,7 @@ import {
   getAllViews,
   changeView,
   getAllFeatured,
+  getClosestProperties,
 } from "../../store/property/propertySlice";
 import {
   addToWishlist,
@@ -65,6 +66,7 @@ const Home = () => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isSchedulingVisit, setIsSchedulingVisit] = useState(false);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const [closestLoaded, setClosestLoaded] = useState(false);
   const router = useRouter();
 
   // New: search and filter modal states
@@ -106,11 +108,140 @@ const Home = () => {
     dispatch(getAllPropertyTypes());
   }, []);
 
+  useEffect(() => {
+    const tryLoadClosest = async () => {
+      if (!regions.length || !subregions.length || !locations.length || closestLoaded) return;
+      try {
+        const stored = await AsyncStorage.getItem("userLocationNames");
+        console.log("Stored location names:", stored);
+        if (!stored) {
+          console.log("No stored location names found");
+          return;
+        }
+        const { regionName, subregionName, locationName } = JSON.parse(stored);
+        console.log("Parsed location names:", { regionName, subregionName, locationName });
+        if (!regionName && !subregionName && !locationName) {
+          console.log("No valid location names found");
+          return;
+        }
+
+        // TEMPORARY: Override with first available region for testing
+        if (regions.length > 0) {
+          console.log("TEMPORARY: Using first region for testing:", regions[0].region_name);
+          const testFilters = { region: regions[0]._id, limit: 10 };
+          console.log("Test filters:", testFilters);
+          await dispatch(getClosestProperties(testFilters));
+          setClosestLoaded(true);
+          return;
+        }
+
+        // Debug: show available regions
+        console.log("Available regions:", regions.map(r => ({ id: r._id, name: r.region_name })));
+        console.log("Available subregions:", subregions.map(sr => ({ id: sr._id, name: sr.subregion_name, region: sr.region_id })));
+        console.log("Available locations:", locations.map(loc => ({ id: loc._id, name: loc.location, subregion: loc.subregion_id })));
+
+        // Check if we have any data
+        if (regions.length === 0) {
+          console.log("No regions found in database");
+          setClosestLoaded(true);
+          return;
+        }
+
+        let regionMatch = regions.find((r) => r.region_name?.toLowerCase() === regionName?.toLowerCase());
+        let subregionMatch = subregions.find((sr) => sr.subregion_name?.toLowerCase() === subregionName?.toLowerCase());
+        let locationMatch = locations.find((loc) => loc.location?.toLowerCase() === locationName?.toLowerCase());
+
+        console.log("Location matches:", { 
+          regionMatch: regionMatch?._id, 
+          subregionMatch: subregionMatch?._id, 
+          locationMatch: locationMatch?._id 
+        });
+
+        // If no exact matches, try partial matches
+        if (!regionMatch && regionName) {
+          const partialRegionMatch = regions.find((r) => 
+            r.region_name?.toLowerCase().includes(regionName?.toLowerCase()) ||
+            regionName?.toLowerCase().includes(r.region_name?.toLowerCase())
+          );
+          if (partialRegionMatch) {
+            console.log("Found partial region match:", partialRegionMatch.region_name);
+            regionMatch = partialRegionMatch;
+          }
+        }
+
+        if (!subregionMatch && subregionName) {
+          const partialSubregionMatch = subregions.find((sr) => 
+            sr.subregion_name?.toLowerCase().includes(subregionName?.toLowerCase()) ||
+            subregionName?.toLowerCase().includes(sr.subregion_name?.toLowerCase())
+          );
+          if (partialSubregionMatch) {
+            console.log("Found partial subregion match:", partialSubregionMatch.subregion_name);
+            subregionMatch = partialSubregionMatch;
+          }
+        }
+
+        if (!locationMatch && locationName) {
+          const partialLocationMatch = locations.find((loc) => 
+            loc.location?.toLowerCase().includes(locationName?.toLowerCase()) ||
+            locationName?.toLowerCase().includes(loc.location?.toLowerCase())
+          );
+          if (partialLocationMatch) {
+            console.log("Found partial location match:", partialLocationMatch.location);
+            locationMatch = partialLocationMatch;
+          }
+        }
+
+        // If still no matches, try to find any region that might be similar
+        if (!regionMatch && regionName) {
+          const similarRegion = regions.find((r) => 
+            r.region_name?.toLowerCase().includes("state") ||
+            r.region_name?.toLowerCase().includes("province") ||
+            r.region_name?.toLowerCase().includes("region")
+          );
+          if (similarRegion) {
+            console.log("Using similar region as fallback:", similarRegion.region_name);
+            regionMatch = similarRegion;
+          }
+        }
+
+        const filters = {
+          ...(regionMatch ? { region: regionMatch._id } : {}),
+          ...(subregionMatch ? { subregion: subregionMatch._id } : {}),
+          ...(locationMatch ? { location: locationMatch._id } : {}),
+          limit: 10,
+        };
+        console.log("Filters for closest properties:", filters);
+        
+        if (filters.region || filters.subregion || filters.location) {
+          console.log("Dispatching getClosestProperties with filters:", filters);
+          await dispatch(getClosestProperties(filters));
+          setClosestLoaded(true);
+        } else {
+          console.log("No valid filters found, trying fallback with first region");
+          // Fallback: try to show properties from the first available region
+          if (regions.length > 0) {
+            const fallbackFilters = { region: regions[0]._id, limit: 10 };
+            console.log("Using fallback filters:", fallbackFilters);
+            await dispatch(getClosestProperties(fallbackFilters));
+            setClosestLoaded(true);
+          } else {
+            console.log("No regions available for fallback");
+            setClosestLoaded(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading closest properties:", error);
+      }
+    };
+    tryLoadClosest();
+  }, [regions, subregions, locations, closestLoaded, dispatch]);
+
   const { propertiesByUse, views, isSuccess, featuredProperties } = useSelector(
     (state) => state.property
   );
   const { regions, subregions, locations } = useSelector((state) => state.address);
   const { propertyTypes } = useSelector((state) => state.propertyType);
+  const { closestProperties } = useSelector((state) => state.property);
 
   const { t, i18n } = useTranslation();
 
@@ -322,6 +453,99 @@ const Home = () => {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} removeClippedSubviews={true} contentContainerStyle={{ paddingBottom: 100 }}>
         <View className="px-5 mt-4 mb-2">
           <SearchBarWithFilter value={searchQuery} onChangeText={setSearchQuery} onOpenFilter={() => setFilterModalVisible(true)} onSubmit={handleSearchSubmit} />
+        </View>
+
+        {/* Closest to you section - always visible */}
+        <View className="mb-6">
+          <SectionHeader 
+            title={t("closest_to_you") || "Closest to you"} 
+            onSeeAll={() => handleSeeAll("closest")} 
+          />
+          {closestProperties?.length > 0 ? (
+            <FlatList
+              data={closestProperties}
+              keyExtractor={(item) => item._id}
+              renderItem={useCallback(({ item }) => (
+                <PropertyItem item={item} onPress={handlePress} onFavorite={handleFavourite} />
+              ), [handlePress, handleFavourite])}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={5}
+              windowSize={5}
+              initialNumToRender={3}
+              contentContainerStyle={{ paddingHorizontal: SCREEN_WIDTH * 0.04, paddingVertical: 8 }}
+              ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
+              snapToAlignment="start"
+              decelerationRate="fast"
+              snapToInterval={CARD_WIDTH + 16}
+            />
+          ) : (
+            <View className="flex items-center justify-center p-4">
+              <Text className="text-gray-500 dark:text-gray-400" style={{ fontSize: SCREEN_WIDTH * 0.035 }}>
+                {closestLoaded ? "No properties found in your area" : "Loading properties in your area..."}
+              </Text>
+              {closestLoaded && (
+                <TouchableOpacity 
+                  className="mt-2 bg-blue-500 px-4 py-2 rounded-full"
+                  onPress={() => {
+                    setClosestLoaded(false);
+                    // Force reload
+                    setTimeout(() => {
+                      const tryLoadClosest = async () => {
+                        try {
+                          const stored = await AsyncStorage.getItem("userLocationNames");
+                          console.log("Manual refresh - stored location names:", stored);
+                          if (!stored) return;
+                          
+                          const { regionName, subregionName, locationName } = JSON.parse(stored);
+                          console.log("Manual refresh - parsed location names:", { regionName, subregionName, locationName });
+                          
+                          // Try to find matches with more flexible logic
+                          const regionMatch = regions.find((r) => 
+                            r.region_name?.toLowerCase().includes(regionName?.toLowerCase()) ||
+                            regionName?.toLowerCase().includes(r.region_name?.toLowerCase())
+                          );
+                          const subregionMatch = subregions.find((sr) => 
+                            sr.subregion_name?.toLowerCase().includes(subregionName?.toLowerCase()) ||
+                            subregionName?.toLowerCase().includes(sr.subregion_name?.toLowerCase())
+                          );
+                          const locationMatch = locations.find((loc) => 
+                            loc.location?.toLowerCase().includes(locationName?.toLowerCase()) ||
+                            locationName?.toLowerCase().includes(loc.location?.toLowerCase())
+                          );
+
+                          console.log("Manual refresh - location matches:", { 
+                            regionMatch: regionMatch?._id, 
+                            subregionMatch: subregionMatch?._id, 
+                            locationMatch: locationMatch?._id 
+                          });
+
+                          const filters = {
+                            ...(regionMatch ? { region: regionMatch._id } : {}),
+                            ...(subregionMatch ? { subregion: subregionMatch._id } : {}),
+                            ...(locationMatch ? { location: locationMatch._id } : {}),
+                            limit: 10,
+                          };
+                          
+                          if (filters.region || filters.subregion || filters.location) {
+                            console.log("Manual refresh - dispatching getClosestProperties with filters:", filters);
+                            dispatch(getClosestProperties(filters));
+                            setClosestLoaded(true);
+                          }
+                        } catch (error) {
+                          console.error("Manual refresh error:", error);
+                        }
+                      };
+                      tryLoadClosest();
+                    }, 100);
+                  }}
+                >
+                  <Text className="text-white font-medium">Refresh Location</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
 
         <View className="mb-6">

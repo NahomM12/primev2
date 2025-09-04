@@ -163,6 +163,18 @@ export const getAllFeatured = createAsyncThunk(
   }
 );
 
+// New: fetch properties close to user area
+export const getClosestProperties = createAsyncThunk(
+  "property/closest",
+  async (filters, thunkAPI) => {
+    try {
+      return await propertyService.getClosestProperties(filters);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
 export const propertySlice = createSlice({
   name: "property",
   initialState: {
@@ -172,6 +184,7 @@ export const propertySlice = createSlice({
       sell: [],
       rent: [],
     },
+    closestProperties: [],
   },
   reducers: {
     resetAuthState: (state) => {
@@ -371,6 +384,20 @@ export const propertySlice = createSlice({
         console.log(action.payload);
       })
       .addCase(getRejectionMessages.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      // New: closest properties reducers
+      .addCase(getClosestProperties.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getClosestProperties.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.closestProperties = action.payload?.properties || [];
+      })
+      .addCase(getClosestProperties.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;

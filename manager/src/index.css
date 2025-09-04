@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+
+/* Dark mode base styles */
+/* .dark {
+    background-color: #333;
+    color: #fff;
+  }
+  
+  .dark .sidebar {
+    background-color: #f10a0a;
+  }
+  
+  .dark .navbar {
+    background-color: #555;
+  }
+  
+  .dark .main-content {
+    background-color: #222;
+  }
+  
+  .dark .footer {
+    background-color: #444;
+  }
+  
+  .dark button {
+    background-color: #555;
+    color: #fff;
+  }
+  
+  .dark button:hover {
+    background-color: #666;
+  }
+   */

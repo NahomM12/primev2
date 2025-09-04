@@ -16,6 +16,8 @@ import Toast from "react-native-toast-message";
 import { login, resetAuthState } from "../../store/auth/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import * as Location from "expo-location";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SignIn = () => {
   const { t } = useTranslation();
@@ -33,6 +35,36 @@ const SignIn = () => {
   const { user, isSuccess, isError, message } = useSelector(
     (state) => state.auth
   );
+
+  const ensureUserLocationSaved = async () => {
+    try {
+      const existing = await AsyncStorage.getItem("userLocationNames");
+      if (existing) return;
+
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") return;
+
+      const position = await Location.getCurrentPositionAsync({});
+      const geocode = await Location.reverseGeocodeAsync({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      });
+
+      const first = geocode?.[0];
+      if (!first) return;
+
+      const regionName = first.region || first.administrativeArea || "";
+      const subregionName = first.subregion || first.subAdministrativeArea || "";
+      const locationName = first.city || first.district || first.name || first.locality || "";
+
+      await AsyncStorage.setItem(
+        "userLocationNames",
+        JSON.stringify({ regionName, subregionName, locationName })
+      );
+    } catch (e) {
+      // ignore location failures silently
+    }
+  };
 
   const validateForm = () => {
     let isValid = true;
@@ -104,6 +136,7 @@ const SignIn = () => {
   useEffect(() => {
     console.log(isSuccess, user);
     if (isSuccess && user) {
+      ensureUserLocationSaved();
       Toast.show({
         type: "success",
         text1: "Success",
