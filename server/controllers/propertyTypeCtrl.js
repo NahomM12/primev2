@@ -6,6 +6,7 @@ const {
 
 const createPropertyType = asyncHandler(async (req, res) => {
   const { name, fields } = req.body;
+  console.log(req.body);
   // const { id } = req.user;
 
   try {

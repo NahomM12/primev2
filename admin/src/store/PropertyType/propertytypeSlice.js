@@ -108,7 +108,7 @@ export const propertyTypeSlice = createSlice({
         state.isError = false;
         state.message = "Property deleted successfully!";
         state.propertyTypes = state.propertyTypes.filter(
-          (p) => p.id !== action.payload
+          (p) => p._id !== action.payload
         );
         toast.success("Property deleted successfully!");
       })
@@ -130,7 +130,7 @@ export const propertyTypeSlice = createSlice({
         state.isError = false;
         state.message = "Property updated successfully!";
         const index = state.propertyTypes.findIndex(
-          (p) => p.id === action.payload.id
+          (p) => p._id === action.payload._id
         );
         if (index !== -1) {
           state.propertyTypes[index] = action.payload;
@@ -153,7 +153,7 @@ export const propertyTypeSlice = createSlice({
         state.isError = false;
         state.message = "Property add successfully!";
         const index = state.propertyTypes.findIndex(
-          (p) => p.id === action.payload.id
+          (p) => p._id === action.payload._id
         );
         if (index !== -1) {
           state.propertyTypes[index] = action.payload;

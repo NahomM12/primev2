@@ -34,11 +34,11 @@ const addPropertytype = async (data) => {
 
   const response = await axios.post(
     `${base_url}/property-type/create-type`,
+    data,
     {
       headers,
       withCredentials: true,
-    },
-    data
+    }
   );
   return response.data;
 };

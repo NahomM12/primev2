@@ -9,7 +9,7 @@ const AddPropertyType = ({ setIsAdd }) => {
 
   // Dynamic array of fields
   const [fields, setFields] = useState([
-    { field_name: "", field_type: "", field_required: false },
+    { name: "", type: "", required: false },
   ]);
 
   const handleFieldChange = (e, index) => {
@@ -19,10 +19,7 @@ const AddPropertyType = ({ setIsAdd }) => {
   };
 
   const handleAddField = () => {
-    setFields([
-      ...fields,
-      { field_name: "", field_type: "", field_required: false },
-    ]);
+    setFields([...fields, { name: "", type: "", required: false }]);
   };
 
   const handleSubmit = (e) => {
@@ -30,8 +27,7 @@ const AddPropertyType = ({ setIsAdd }) => {
     // Ensure all fields are filled before submitting
     if (
       fields.some(
-        (field) =>
-          !field.field_name || !field.field_type || field.field_required === ""
+        (field) => !field.name || !field.type || field.required === ""
       )
     ) {
       toast.error("All fields are required!");
@@ -74,8 +70,8 @@ const AddPropertyType = ({ setIsAdd }) => {
               </label>
               <input
                 type="text"
-                name="field_name"
-                value={field.field_name}
+                name="name"
+                value={field.name}
                 onChange={(e) => handleFieldChange(e, index)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50"
               />
@@ -85,8 +81,8 @@ const AddPropertyType = ({ setIsAdd }) => {
                 Field Type
               </label>
               <select
-                name="field_type"
-                value={field.field_type}
+                name="type"
+                value={field.type}
                 onChange={(e) => handleFieldChange(e, index)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50"
               >
@@ -102,8 +98,8 @@ const AddPropertyType = ({ setIsAdd }) => {
                 Field Required
               </label>
               <select
-                name="field_required"
-                value={field.field_required}
+                name="required"
+                value={field.required}
                 onChange={(e) => handleFieldChange(e, index)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50"
               >
