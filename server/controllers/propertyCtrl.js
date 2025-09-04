@@ -166,25 +166,14 @@ const getAllProperties = asyncHandler(async (req, res) => {
     // pagination
     const page = req.query.page;
     const limit = req.query.limit;
-    if (page && limit) {
-      const skip = (parseInt(page) - 1) * parseInt(limit);
-      query = query.skip(skip).limit(parseInt(limit));
-      
+    const skip = (page - 1) * limit;
+    query = query.skip(skip).limit(limit);
+    if (req.query.page) {
       const usersCount = await Property.countDocuments();
       if (skip >= usersCount) throw new Error("This Page does not exist");
-    } else if (limit) {
-      query = query.limit(parseInt(limit));
     }
-    
-    // Add debugging
-    console.log("Final query object:", JSON.stringify(queryObj));
-    console.log("Query string:", queryStr);
-    
-    const properties = await query;
     const totalUsers = await Property.countDocuments();
-    
-    console.log(`Found ${properties.length} properties out of ${totalUsers} total`);
-    
+    const properties = await query;
     res.json({ properties, totalUsers });
   } catch (error) {
     throw new Error(error);

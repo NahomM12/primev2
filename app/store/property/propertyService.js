@@ -314,11 +314,6 @@ const getAllFeatured = async () => {
   return response.data;
 };
 
-// New: get properties by user area (closest)
-const getClosestProperties = async ({ region, subregion, location, limit = 10 }) => {
-  return getAllProperties({ region, subregion, location, limit });
-};
-
 const propertyService = {
   createProperty,
   getAllProperties,
@@ -332,7 +327,6 @@ const propertyService = {
   changeFeatured,
   getRejectionMessages,
   getAllFeatured,
-  getClosestProperties,
 };
 
 export default propertyService;
