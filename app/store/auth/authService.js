@@ -1,6 +1,7 @@
 import axios from "axios";
 import { baseUrl } from "../../constants/axiosConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { registerForPushNotificationsAsync } from "../../utils/register";
 
 const getAuthToken = () => {
   const userData = localStorage.getItem("user");
@@ -19,6 +20,24 @@ const login = async (data) => {
   await AsyncStorage.setItem("user", JSON.stringify(response.data));
 
   console.log("user data: ", response.data);
+
+  // Send push token to backend
+  try {
+    const pushToken = await registerForPushNotificationsAsync();
+    if (pushToken) {
+      await axios.post(
+        `${baseUrl}/auth/save-push-token`,
+        { pushToken },
+        {
+          headers: {
+            Authorization: `Bearer ${response.data.token}`,
+          },
+        }
+      );
+    }
+  } catch (err) {
+    console.warn("Failed to register push token:", err);
+  }
 
   return response.data;
 };

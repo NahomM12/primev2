@@ -60,6 +60,7 @@ var userSchema = new mongoose.Schema(
       },
     },
     refershToken: { type: String },
+    pushToken: { type: String },
   },
   {
     timestamps: true,

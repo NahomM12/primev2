@@ -202,6 +202,20 @@ const changeLanguage = asyncHandler(async (req, res) => {
   }
 });
 
+const savePushToken = asyncHandler(async (req, res) => {
+  const { pushToken } = req.body;
+  const { id } = req.user;
+  if (!pushToken) {
+    return res.status(400).json({ message: "Push token is required" });
+  }
+  try {
+    const user = await User.findByIdAndUpdate(id, { pushToken }, { new: true });
+    res.json({ message: "Push token saved", user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = {
   register,
   login,
@@ -212,4 +226,5 @@ module.exports = {
   addToWishlist,
   changeMode,
   changeLanguage,
+  savePushToken,
 };

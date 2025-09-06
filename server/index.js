@@ -18,6 +18,7 @@ const locationRouter = require("./routes/locationRoutes");
 const regionRouter = require("./routes/regionRoutes");
 const subRegionRouter = require("./routes/subRegionRoutes");
 const paymentRouter = require("./routes/paymentRoute");
+const notificationRouter = require("./routes/notificationRoutes");
 // const User = require("./models/userModel");
 // const Manager = require("./models/managerModel");
 const PORT = process.env.PORT || 9001;
@@ -61,6 +62,7 @@ app.use("/api/v1/region", regionRouter);
 app.use("/api/v1/subregion", subRegionRouter);
 app.use("/api/v1/location", locationRouter);
 app.use("/api/v1/payment", paymentRouter);
+app.use("/api/v1/notification", notificationRouter);
 
 // const updateUsers = async () => {
 //   try {
