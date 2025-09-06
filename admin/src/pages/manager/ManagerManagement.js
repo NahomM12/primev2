@@ -33,6 +33,8 @@ const ManagerManagement = () => {
   const [isAdd, setIsAdd] = useState(false);
   const [isDelete, setIsDelete] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+
+  // ✅ Search + Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [filterDate, setFilterDate] = useState("");
 
@@ -40,21 +42,24 @@ const ManagerManagement = () => {
     dispatch(getAllManagers());
   }, [dispatch]);
 
+  // ✅ Integrated filtering (works same as dummy data test)
   const filteredManagers = managers?.filter((user) => {
+    const createdDate = new Date(user.createdAt || user.created_at)
+      .toISOString()
+      .split("T")[0];
+
     return (
-      (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.phone.includes(searchQuery)) &&
-      (filterDate
-        ? new Date(user.created_at).toISOString().split("T")[0] === filterDate
-        : true)
+      (user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.phone?.includes(searchQuery)) &&
+      (filterDate ? createdDate === filterDate : true)
     );
   });
 
   return (
     <div className="p-20">
       <div className="flex justify-between mb-4">
-        <h1>Managers Management</h1>
+        <h1 className="text-xl font-bold">Managers Management</h1>
         <button
           className="border p-2 rounded bg-blue-500 text-white"
           onClick={() => setIsAdd(true)}
@@ -63,6 +68,7 @@ const ManagerManagement = () => {
         </button>
       </div>
 
+      {/* ✅ Search + Date filter */}
       <div className="flex gap-4 mb-4">
         <input
           type="text"
@@ -98,7 +104,7 @@ const ManagerManagement = () => {
               <td className="border px-4 py-2">{user?.email}</td>
               <td className="border px-4 py-2">{user?.phone}</td>
               <td className="border px-4 py-2">
-                {new Date(user.createdAt).toLocaleString()}
+                {new Date(user.createdAt || user.created_at).toLocaleString()}
               </td>
               <td className="border px-4 py-2">
                 <button
@@ -134,6 +140,7 @@ const ManagerManagement = () => {
         </tbody>
       </table>
 
+      {/* Modals */}
       <Modal
         isOpen={isView}
         onRequestClose={() => setIsView(false)}

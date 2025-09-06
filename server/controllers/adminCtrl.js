@@ -70,6 +70,18 @@ const getAllUsers = asyncHandler(async (req, res) => {
   }
 });
 
+const changeProfile = asyncHandler(async (req, res) => {
+  const { id } = req.admin;
+  console.log(req.admin);
+  // const { id } = req.params;
+  try {
+    const user = await User.findByIdAndUpdate(id, req.body, { new: true });
+    res.json(user);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 const deleteUser = asyncHandler(async (req, res) => {
   // const { id } = req.admin;
   const { id } = req.params;
@@ -183,4 +195,5 @@ module.exports = {
   getSaleTransaction,
   getRentTransaction,
   addManager,
+  changeProfile,
 };

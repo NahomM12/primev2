@@ -60,6 +60,8 @@ const createPropertyType = asyncHandler(async (req, res) => {
       { new: true }
     ).populate("createdBy", "firstname lastname");
 
+    console.log(updatedPropertyType);
+
     res.status(201).json(updatedPropertyType);
   } catch (error) {
     throw new Error(error);

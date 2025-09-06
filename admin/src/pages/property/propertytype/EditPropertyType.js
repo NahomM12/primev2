@@ -1,23 +1,23 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { editPropertytype } from "../../../store/PropertyType/propertytypeSlice";
 
-const EditPropertyType = ({ setIsEdit, selectedPropertyType }) => {
+const EditPropertyType = ({
+  setIsEdit,
+  selectedPropertyType,
+  updateProperty,
+}) => {
   const dispatch = useDispatch();
-
-  // State for property type details
+  // Use selectedPropertyType to initialize state
   const [propertyTypeDetails, setPropertyTypeDetails] = useState({
     name: selectedPropertyType?.name || "",
     fields: selectedPropertyType?.fields || [],
   });
 
-  // Handle input changes for property type details
   const handleChange = (e) => {
     const { name, value } = e.target;
     setPropertyTypeDetails({ ...propertyTypeDetails, [name]: value });
   };
 
-  // Handle input changes for fields
   const handleFieldChange = (index, fieldName, value) => {
     const updatedFields = propertyTypeDetails.fields.map((field, i) =>
       i === index ? { ...field, [fieldName]: value } : field
@@ -25,15 +25,17 @@ const EditPropertyType = ({ setIsEdit, selectedPropertyType }) => {
     setPropertyTypeDetails({ ...propertyTypeDetails, fields: updatedFields });
   };
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    const data = {
-      id: selectedPropertyType.id, // Pass the ID of the property type
-      data: propertyTypeDetails, // Updated property type details
-    };
-    dispatch(editPropertytype(data)); // Dispatch the edit action
-    setIsEdit(false); // Close the edit form
+    // Call parent function to update the property type in mock state
+    dispatch(updateProperty(selectedPropertyType._id, propertyTypeDetails))
+      .unwrap()
+      .then(() => {
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      });
+    setIsEdit(false);
   };
 
   return (
@@ -60,29 +62,34 @@ const EditPropertyType = ({ setIsEdit, selectedPropertyType }) => {
                 <label className="block text-sm font-medium">Field Name:</label>
                 <input
                   type="text"
-                  value={field.field_name}
+                  value={field.name}
                   onChange={(e) =>
-                    handleFieldChange(index, "field_name", e.target.value)
+                    handleFieldChange(index, "name", e.target.value)
                   }
                   className="border p-2 w-full rounded"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium">Field Type:</label>
+                <label
+                  className="block text-sm font-medium"
+                  onClick={() => console.log(field.type)}
+                >
+                  Field Type:
+                </label>
                 <select
-                  value={field.field_type}
+                  value={field.type}
                   onChange={(e) =>
-                    handleFieldChange(index, "field_type", e.target.value)
+                    handleFieldChange(index, "type", e.target.value)
                   }
                   className="border p-2 w-full rounded"
                   required
                 >
-                  <option value="number">Number</option>
-                  <option value="boolean">Boolean</option>
-                  <option value="text">Text</option>
-                  <option value="date">Date</option>
-                  <option value="select">Select</option>
+                  <option value="Number">Number</option>
+                  <option value="Boolean">Boolean</option>
+                  <option value="String">String</option>
+                  <option value="Date">Date</option>
+                  <option value="">Select</option>
                 </select>
               </div>
             </div>

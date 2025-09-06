@@ -6,7 +6,7 @@ const {
   deleteSubRegion,
   deleteAllSubRegions,
 } = require("../controllers/subRegionCtrl");
-// const { adminAuthMiddleware } = require("../middlewares/authMiddleware");
+// const { adminMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.post("/add-subregion", addSubRegion);

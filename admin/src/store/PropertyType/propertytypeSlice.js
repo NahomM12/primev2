@@ -152,12 +152,14 @@ export const propertyTypeSlice = createSlice({
         state.isSuccess = true;
         state.isError = false;
         state.message = "Property add successfully!";
-        const index = state.propertyTypes.findIndex(
-          (p) => p._id === action.payload._id
-        );
-        if (index !== -1) {
-          state.propertyTypes[index] = action.payload;
-        }
+        // console.log(state.propertyTypes);
+        // console.log("action: ", action.payload);
+        // const index = state.propertyTypes.findIndex(
+        //   (p) => p._id === action.payload._id
+        // );
+        // if (index !== -1) {
+        //   state.propertyTypes[index] = action.payload;
+        // }
         toast.success("Property add successfully!");
       })
       .addCase(addPropertytype.rejected, (state, action) => {

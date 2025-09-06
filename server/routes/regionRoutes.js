@@ -6,7 +6,7 @@ const {
   deleteRegion,
   deleteAllRegions,
 } = require("../controllers/regionCtrl");
-// const { adminAuthMiddleware } = require("../middlewares/authMiddleware");
+// const { adminMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.post("/add-region", addRegion);

@@ -27,10 +27,13 @@ const UserManagement = () => {
   const dispatch = useDispatch();
   const { users } = useSelector((state) => state.user);
 
+  // modal states
   const [isView, setIsView] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [isDelete, setIsDelete] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+
+  // filter/search states
   const [searchQuery, setSearchQuery] = useState("");
   const [filterDate, setFilterDate] = useState("");
 
@@ -53,20 +56,25 @@ const UserManagement = () => {
     setIsDelete(true);
   };
 
+  // integrated filtering
   const filteredUsers = users?.filter((user) => {
+    const createdAt =
+      user.createdAt || user.created_at || new Date().toISOString();
+
     return (
-      (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.phone.includes(searchQuery)) &&
+      (user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase())) &&
       (filterDate
-        ? new Date(user.created_at).toISOString().split("T")[0] === filterDate
+        ? new Date(createdAt).toISOString().split("T")[0] === filterDate
         : true)
     );
   });
 
   return (
-    <div className="p-20">
-      <h1>User Management</h1>
+    <div className="p-10">
+      <h1 className="text-2xl font-bold mb-4">User Management</h1>
+
+      {/* Search + Filter */}
       <div className="flex gap-4 mb-4">
         <input
           type="text"
@@ -83,10 +91,11 @@ const UserManagement = () => {
         />
       </div>
 
+      {/* Table */}
       <table className="table-auto w-full border-collapse border border-gray-300 mt-4">
         <thead>
           <tr>
-            <th className="border px-4 py-2">ID</th>
+            <th className="border px-4 py-2">#</th>
             <th className="border px-4 py-2">Name</th>
             <th className="border px-4 py-2">Email</th>
             <th className="border px-4 py-2">Phone</th>
@@ -95,37 +104,42 @@ const UserManagement = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers?.map((user, index) => (
-            <tr key={user._id}>
-              <td className="border px-4 py-2">{index + 1}</td>
-              <td className="border px-4 py-2">{user?.name}</td>
-              <td className="border px-4 py-2">{user?.email}</td>
-              <td className="border px-4 py-2">{user?.phone}</td>
-              <td className="border px-4 py-2">
-                {new Date(user.createdAt).toLocaleString()}
-              </td>
-              <td className="border px-4 py-2">
-                <button
-                  onClick={() => handleView(user)}
-                  className="text-gray-500 hover:underline mr-2"
-                >
-                  <FiEye size={16} />
-                </button>
-                <button
-                  onClick={() => handleEdit(user)}
-                  className="text-blue-500 hover:underline mr-2"
-                >
-                  <FiEdit2 size={16} />
-                </button>
-                <button
-                  onClick={() => handleDelete(user)}
-                  className="text-red-500 hover:underline"
-                >
-                  <FiTrash2 size={16} />
-                </button>
-              </td>
-            </tr>
-          ))}
+          {filteredUsers?.map((user, index) => {
+            const createdAt =
+              user.createdAt || user.created_at || new Date().toISOString();
+
+            return (
+              <tr key={user._id}>
+                <td className="border px-4 py-2">{index + 1}</td>
+                <td className="border px-4 py-2">{user?.name}</td>
+                <td className="border px-4 py-2">{user?.email}</td>
+                <td className="border px-4 py-2">{user?.phone}</td>
+                <td className="border px-4 py-2">
+                  {new Date(createdAt).toLocaleString()}
+                </td>
+                <td className="border px-4 py-2 flex gap-2">
+                  <button
+                    onClick={() => handleView(user)}
+                    className="text-gray-500 hover:underline"
+                  >
+                    <FiEye size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleEdit(user)}
+                    className="text-blue-500 hover:underline"
+                  >
+                    <FiEdit2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(user)}
+                    className="text-red-500 hover:underline"
+                  >
+                    <FiTrash2 size={16} />
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 

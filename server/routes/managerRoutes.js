@@ -8,7 +8,7 @@ const {
 } = require("../controllers/managerCtrl");
 const {
   authMiddleware,
-  ManagerMiddleware,
+  managerMiddleware,
 } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
@@ -16,6 +16,6 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/all-users", getAllUsers);
 router.put("/edit-users/:id", editUser);
-router.get("/region-properties", ManagerMiddleware, getRegionProperties);
+router.get("/region-properties", managerMiddleware, getRegionProperties);
 
 module.exports = router;

@@ -35,7 +35,7 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
   }
 });
 
-const ManagerMiddleware = asyncHandler(async (req, res, next) => {
+const managerMiddleware = asyncHandler(async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
@@ -66,7 +66,7 @@ const ManagerMiddleware = asyncHandler(async (req, res, next) => {
   }
 });
 
-const AdminMiddleware = asyncHandler(async (req, res, next) => {
+const adminMiddleware = asyncHandler(async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
@@ -99,6 +99,6 @@ const AdminMiddleware = asyncHandler(async (req, res, next) => {
 
 module.exports = {
   authMiddleware,
-  ManagerMiddleware,
-  AdminMiddleware,
+  managerMiddleware,
+  adminMiddleware,
 };

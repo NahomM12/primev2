@@ -6,7 +6,7 @@ const {
   deleteCategory,
   deleteAllCategories,
 } = require("../controllers/categoryCtrl");
-// const { adminAuthMiddleware } = require("../middlewares/authMiddleware");
+// const { adminMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.post("/add-category", addCategory);

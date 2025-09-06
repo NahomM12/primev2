@@ -7,8 +7,9 @@ const {
   getAllManagers,
   deleteManager,
   addManager,
+  changeProfile,
 } = require("../controllers/adminCtrl");
-const { authMiddleware } = require("../middlewares/authMiddleware");
+const { adminMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.post("/register", register);
@@ -19,5 +20,6 @@ router.delete("/delete-user/:id", deleteUser);
 router.get("/all-managers", getAllManagers);
 router.delete("/delete-manager/:id", deleteManager);
 router.post("/add-manager", addManager);
+router.put("/update-profile", adminMiddleware, changeProfile);
 
 module.exports = router;

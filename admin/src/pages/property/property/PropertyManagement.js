@@ -51,15 +51,26 @@ const PropertyManagement = () => {
     setIsDelete(true);
   };
 
-  // const filteredProperties = properties?.filter((property) => {
-  //   return (
-  //     (property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       property.location.toLowerCase().includes(searchTerm.toLowerCase())) &&
-  //     (filterStatus === "all" ||
-  //       (filterStatus === "available" && property.status) ||
-  //       (filterStatus === "unavailable" && !property.status))
-  //   );
-  // });
+  // ✅ Active search + filter logic
+  const filteredProperties = properties?.filter((property) => {
+    const nameMatch = property?.title
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const locationMatch =
+      property?.address?.subregion?.subregion_name
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      property?.address?.location?.location
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
+    const statusMatch =
+      filterStatus === "all" ||
+      (filterStatus === "available" && property.status) ||
+      (filterStatus === "unavailable" && !property.status);
+
+    return (nameMatch || locationMatch) && statusMatch;
+  });
 
   return (
     <div className="p-10 bg-gray-100 min-h-screen">
@@ -96,45 +107,55 @@ const PropertyManagement = () => {
           </tr>
         </thead>
         <tbody>
-          {properties?.map((property, index) => (
-            <tr key={property._id} className="border-b hover:bg-gray-100">
-              <td className="px-4 py-2">{index + 1}</td>
-              <td className="px-4 py-2">{property.title}</td>
-              <td className="px-4 py-2">
-                {property?.address?.subregion?.subregion_name}
-                {"      "}
-                {property?.address?.location?.location}
-              </td>
-              <td className="px-4 py-2">${property.price}</td>
-              <td className="px-4 py-2">
-                {property.status ? (
-                  <span className="text-green-500">Available</span>
-                ) : (
-                  <span className="text-red-500">Unavailable</span>
-                )}
-              </td>
-              <td className="px-4 py-2 space-x-2">
-                <button
-                  onClick={() => handleView(property)}
-                  className="text-gray-600 hover:text-gray-800"
-                >
-                  <FiEye size={18} />
-                </button>
-                <button
-                  onClick={() => handleEdit(property)}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <FiEdit2 size={18} />
-                </button>
-                <button
-                  onClick={() => handleDelete(property)}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  <FiTrash2 size={18} />
-                </button>
+          {filteredProperties?.length > 0 ? (
+            filteredProperties.map((property, index) => (
+              <tr key={property._id} className="border-b hover:bg-gray-100">
+                <td className="px-4 py-2">{index + 1}</td>
+                <td className="px-4 py-2">{property.title}</td>
+                <td className="px-4 py-2">
+                  {property?.address?.subregion?.subregion_name}{" "}
+                  {property?.address?.location?.location}
+                </td>
+                <td className="px-4 py-2">${property.price}</td>
+                <td className="px-4 py-2">
+                  {property.status ? (
+                    <span className="text-green-500">Available</span>
+                  ) : (
+                    <span className="text-red-500">Unavailable</span>
+                  )}
+                </td>
+                <td className="px-4 py-2 space-x-2">
+                  <button
+                    onClick={() => handleView(property)}
+                    className="text-gray-600 hover:text-gray-800"
+                  >
+                    <FiEye size={18} />
+                  </button>
+                  <button
+                    onClick={() => handleEdit(property)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <FiEdit2 size={18} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(property)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <FiTrash2 size={18} />
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td
+                colSpan="6"
+                className="text-center text-gray-500 py-4"
+              >
+                No properties found
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 

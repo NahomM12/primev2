@@ -17,7 +17,7 @@ const customModalStyles = {
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
-    w_idth: "50%",
+    width: "50%",
     maxHeight: "90vh",
     overflow: "auto",
   },

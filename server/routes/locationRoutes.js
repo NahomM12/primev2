@@ -6,7 +6,7 @@ const {
   deleteLocation,
   deleteAllLocations,
 } = require("../controllers/locationCtrl");
-// const { adminAuthMiddleware } = require("../middlewares/authMiddleware");
+// const { adminMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.post("/add-location", addLocation);

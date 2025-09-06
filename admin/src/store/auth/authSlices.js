@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authService from "./authServices";
-import toast from "react-hot-toast";
 
 const getTokenFromLocalStorage = localStorage.getItem("admin")
   ? JSON.parse(localStorage.getItem("admin"))
@@ -14,13 +13,14 @@ const initialState = {
   message: "",
 };
 
+// ====== Async Thunks ======
 export const adminLogin = createAsyncThunk(
   "auth/admin-login",
   async (data, thunkAPI) => {
     try {
       return await authService.adminLogin(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -31,7 +31,7 @@ export const adminRegister = createAsyncThunk(
     try {
       return await authService.adminRegister(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -46,8 +46,9 @@ export const updateProfile = createAsyncThunk(
     }
   }
 );
+
 export const changeDarkMode = createAsyncThunk(
-  "auth/update",
+  "auth/change-dark-mode",
   async (data, thunkAPI) => {
     try {
       return await authService.changeDarkMode(data);
@@ -57,6 +58,7 @@ export const changeDarkMode = createAsyncThunk(
   }
 );
 
+// ====== Slice ======
 export const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -64,81 +66,82 @@ export const authSlice = createSlice({
     messageClear: (state) => {
       state.isSuccess = false;
       state.isError = false;
+      state.message = "";
     },
     user_reset: (state) => {
-      state.user = "";
+      state.user = null;
+      localStorage.removeItem("admin");
     },
   },
   extraReducers: (builder) => {
     builder
+      // Login
       .addCase(adminLogin.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(adminLogin.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.isError = false;
-        state.message = "success";
         state.user = action.payload;
       })
       .addCase(adminLogin.rejected, (state, action) => {
         state.isLoading = false;
-        state.isSuccess = false;
         state.isError = true;
-        state.message = action.error;
+        state.message = action.payload;
       })
+
+      // Register
       .addCase(adminRegister.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(adminRegister.fulfilled, (state, action) => {
+      .addCase(adminRegister.fulfilled, (state) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.isError = false;
-        state.message = "success";
+        state.message = "Registration successful";
       })
       .addCase(adminRegister.rejected, (state, action) => {
         state.isLoading = false;
-        state.isSuccess = false;
         state.isError = true;
-        state.message = action.error;
+        state.message = action.payload;
       })
+
+      // Update Profile
       .addCase(updateProfile.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.isError = false;
         state.message = "Profile updated successfully";
-        state.user = { ...state.user, ...action.payload }; // Update user data
+        state.user = { ...state.user, ...action.payload };
+        localStorage.setItem("admin", JSON.stringify(state.user));
       })
       .addCase(updateProfile.rejected, (state, action) => {
         state.isLoading = false;
-        state.isSuccess = false;
         state.isError = true;
-        state.message = action.payload || "Profile update failed";
+        state.message = action.payload;
       })
+
+      // Change Dark Mode
       .addCase(changeDarkMode.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(changeDarkMode.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.isError = false;
-        state.message = "mode changed successfully";
+        state.message = "Dark mode updated";
         if (action.payload.preference) {
           state.user.preference = action.payload.preference;
+          localStorage.setItem("admin", JSON.stringify(state.user));
         }
       })
       .addCase(changeDarkMode.rejected, (state, action) => {
         state.isLoading = false;
-        state.isSuccess = false;
         state.isError = true;
-        state.message = action.payload || "Profile update failed";
+        state.message = action.payload;
       });
   },
 });
 
 export const { messageClear, user_reset } = authSlice.actions;
-
 export default authSlice.reducer;

@@ -6,7 +6,6 @@ import {
 } from "react-router-dom";
 import React, { useEffect } from "react";
 import AdminLayout from "./components/AdminLayout";
-import Dashboard from "./pages/Dashboard";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Settings from "./pages/Settings";
@@ -20,6 +19,16 @@ import ManagerManagement from "./pages/manager/ManagerManagement";
 import RentalTransactions from "./pages/transaction/RentalTransactions";
 import SaleTransactions from "./pages/transaction/SaleTransactions";
 import Profile from "./pages/auth/Profile";
+import Communications from "./pages/Communications";
+import {
+  Dashboard,
+  StatsCards,
+  RevenueChart,
+  PropertyTypesChart,
+  OccupancyRateChart,
+  RecentActivity,
+} from "./pages/Dashboard";
+import { PrivateRoutes } from "./Routes/PrivateRoutes";
 
 const App = () => {
   useEffect(() => {
@@ -37,7 +46,14 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
 
         {/* Admin Routes (no restriction) */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoutes>
+              <AdminLayout />
+            </PrivateRoutes>
+          }
+        >
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="settings" element={<Settings />} />
           <Route path="region" element={<Region />} />
@@ -49,6 +65,7 @@ const App = () => {
           <Route path="sale" element={<SaleTransactions />} />
           <Route path="user-management" element={<UserManagement />} />
           <Route path="manager-management" element={<ManagerManagement />} />
+          <Route path="communications" element={<Communications />} />
           <Route path="profile" element={<Profile />} />
         </Route>
 
