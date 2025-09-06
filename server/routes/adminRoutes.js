@@ -8,6 +8,7 @@ const {
   deleteManager,
   addManager,
   changeProfile,
+  updatePassword,
 } = require("../controllers/adminCtrl");
 const { adminMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -21,5 +22,6 @@ router.get("/all-managers", getAllManagers);
 router.delete("/delete-manager/:id", deleteManager);
 router.post("/add-manager", addManager);
 router.put("/update-profile", adminMiddleware, changeProfile);
+router.put("/update-password", adminMiddleware, updatePassword);
 
 module.exports = router;

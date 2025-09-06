@@ -75,10 +75,88 @@ const changeProfile = asyncHandler(async (req, res) => {
   console.log(req.admin);
   // const { id } = req.params;
   try {
-    const user = await User.findByIdAndUpdate(id, req.body, { new: true });
+    const user = await Admin.findByIdAndUpdate(id, req.body, { new: true });
     res.json(user);
   } catch (error) {
     throw new Error(error);
+  }
+});
+
+const updatePassword = asyncHandler(async (req, res) => {
+  const { id } = req.admin;
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+
+  // Validate required fields
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Current password, new password, and confirm password are required",
+    });
+  }
+
+  // Check if new password and confirm password match
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "New password and confirm password do not match",
+    });
+  }
+
+  // Check if new password is different from current password
+  if (currentPassword === newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "New password must be different from current password",
+    });
+  }
+
+  try {
+    // Find admin and verify current password
+    const admin = await Admin.findById(id);
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await admin.isPasswordMatched(
+      currentPassword
+    );
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSaltSync(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    const updatedAdmin = await Admin.findByIdAndUpdate(
+      id,
+      {
+        password: hashedPassword,
+        passwordChangedAt: new Date(),
+      },
+      { new: true }
+    ).select("-password -refreshToken");
+
+    res.json({
+      success: true,
+      message: "Password updated successfully",
+      admin: updatedAdmin,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating password",
+      details: error.message,
+    });
   }
 });
 
@@ -196,4 +274,5 @@ module.exports = {
   getRentTransaction,
   addManager,
   changeProfile,
+  updatePassword,
 };

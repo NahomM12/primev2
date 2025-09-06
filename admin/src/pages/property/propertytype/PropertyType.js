@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import Modal from "react-modal";
-
 import { getAllPropertytypes } from "../../../store/PropertyType/propertytypeSlice";
 import ViewPropertyType from "./ViewPropertyType";
 import EditPropertyType from "./EditPropertyType";
@@ -27,14 +26,17 @@ const PropertyType = () => {
   const dispatch = useDispatch();
   const { propertyTypes } = useSelector((state) => state.propertyType);
 
+  const [localPropertyTypes, setLocalPropertyTypes] = useState([]);
   const [isView, setIsView] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [isDelete, setIsDelete] = useState(false);
   const [isAdd, setIsAdd] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState(null);
 
+  // Load property types into local state for editing
   useEffect(() => {
     dispatch(getAllPropertytypes());
+    if (propertyTypes) setLocalPropertyTypes(propertyTypes);
   }, [dispatch]);
 
   const handleView = (property) => {
@@ -54,6 +56,14 @@ const PropertyType = () => {
 
   const handleAdd = () => {
     setIsAdd(true);
+  };
+
+  // Function to update a property type in local state
+  const updateProperty = (id, updatedData) => {
+    const updatedArray = localPropertyTypes.map((property) =>
+      property._id === id ? { ...property, ...updatedData } : property
+    );
+    setLocalPropertyTypes(updatedArray);
   };
 
   return (
@@ -76,14 +86,13 @@ const PropertyType = () => {
           </tr>
         </thead>
         <tbody>
-          {propertyTypes?.map((property) => (
+          {localPropertyTypes?.map((property) => (
             <tr key={property._id}>
               <td className="border px-4 py-2">{property.id}</td>
               <td className="border px-4 py-2">{property.name}</td>
               <td className="border px-4 py-2">
                 {new Date(property.createdAt).toLocaleString()}
               </td>
-
               <td className="border px-4 py-2">
                 <button
                   onClick={() => handleView(property)}
@@ -129,10 +138,13 @@ const PropertyType = () => {
         style={customModalStyles}
         contentLabel="Edit Type"
       >
-        <EditPropertyType
-          setIsEdit={setIsEdit}
-          selectedProperty={selectedProperty}
-        />
+        {selectedProperty && (
+          <EditPropertyType
+            setIsEdit={setIsEdit}
+            selectedPropertyType={selectedProperty}
+            updateProperty={updateProperty} // Pass the update function
+          />
+        )}
       </Modal>
 
       {/* Delete Property Modal */}
