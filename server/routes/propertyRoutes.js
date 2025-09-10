@@ -16,6 +16,7 @@ const {
   changePropertyStatus,
   getRejectionMessages,
   getAllFeatured,
+  getClosestProperties,
 } = require("../controllers/propertyCtrl");
 const { authMiddleware } = require("../middlewares/authMiddleware");
 // const { uploadImages } = require("../middlewares/uploadImages");
@@ -33,6 +34,7 @@ router.put("/change-featured/:propId", changeFeatured);
 router.put("/property-status/:propId", changePropertyStatus);
 router.delete("/delete-property/:id", deleteProperty);
 router.get("/:id", getProperty);
+router.get("/closest", getClosestProperties);
 
 // Protected routes
 router.use(authMiddleware);
