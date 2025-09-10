@@ -58,44 +58,6 @@ const createProperty = asyncHandler(async (req, res) => {
     }
     console.log(fields);
     // Create property instance with base fields
-    // const propertyData = {
-    //   title: fields.title[0],
-    //   description: fields.description[0],
-    //   price: parseFloat(fields.price[0]),
-    //   address: {
-    //     region: fields.region[0],
-    //     subregion: fields.subregion[0],
-    //     location: fields.location[0],
-    //   },
-
-    //   propertyType: fields.propertyType[0],
-    //   property_use: fields.property_use[0],
-    //   images: imageUrls,
-    //   owner: id,
-    //   status: "pending",
-    //   typeSpecificFields,
-    // };
-
-    // Parse coordinates if provided
-    let coordinates = [0, 0];
-    if (fields.coordinates && fields.coordinates[0]) {
-      try {
-        const coords =
-          typeof fields.coordinates[0] === "string"
-            ? JSON.parse(fields.coordinates[0])
-            : fields.coordinates[0];
-        if (coords.longitude && coords.latitude) {
-          coordinates = [
-            parseFloat(coords.longitude),
-            parseFloat(coords.latitude),
-          ];
-        }
-      } catch (e) {
-        // fallback: ignore
-      }
-    }
-
-    // Create property instance with base fields
     const propertyData = {
       title: fields.title[0],
       description: fields.description[0],
@@ -112,7 +74,6 @@ const createProperty = asyncHandler(async (req, res) => {
       owner: id,
       status: "pending",
       typeSpecificFields,
-      coordinates: { type: "Point", coordinates },
     };
 
     const property = new Property(propertyData);
@@ -620,29 +581,6 @@ const getAllFeatured = asyncHandler(async (req, res) => {
   }
 });
 
-const getClosestProperties = asyncHandler(async (req, res) => {
-  const { lat, lng, limit = 10 } = req.query;
-  if (!lat || !lng) {
-    return res.status(400).json({ message: "Latitude and longitude required" });
-  }
-  const properties = await Property.find({
-    coordinates: {
-      $near: {
-        $geometry: {
-          type: "Point",
-          coordinates: [parseFloat(lng), parseFloat(lat)],
-        },
-        $maxDistance: 20000, // 20km, adjust as needed
-      },
-    },
-  })
-    .limit(Number(limit))
-    .populate("propertyType")
-    .populate("owner")
-    .populate("address.region address.subregion address.location");
-  res.json(properties);
-});
-
 module.exports = {
   createProperty,
   getAllProperties,
@@ -659,5 +597,4 @@ module.exports = {
   getAllFeatured,
   changePropertyStatus,
   getRejectionMessages,
-  getClosestProperties,
 };

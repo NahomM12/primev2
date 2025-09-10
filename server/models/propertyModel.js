@@ -92,10 +92,6 @@ const propertySchema = new mongoose.Schema(
       of: mongoose.Schema.Types.Mixed,
       default: {},
     },
-    coordinates: {
-      type: { type: String, enum: ["Point"], default: "Point" },
-      coordinates: { type: [Number], default: [0, 0] }, // [lng, lat]
-    },
   },
   {
     timestamps: true,
@@ -103,7 +99,6 @@ const propertySchema = new mongoose.Schema(
   }
 );
 
-propertySchema.index({ coordinates: "2dsphere" });
 // Index title for faster regex/text search on titles
 propertySchema.index({ title: 1 });
 

@@ -45,7 +45,6 @@ import SectionHeader from "../../components/home/SectionHeader";
 import PropertyItem from "../../components/home/PropertyItem";
 import PropertyModal from "../../components/home/PropertyModal";
 import FilterModal from "../../components/home/FilterModal";
-import * as Location from "expo-location";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CARD_ASPECT_RATIO = 0.8;
@@ -66,6 +65,9 @@ const Home = () => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isSchedulingVisit, setIsSchedulingVisit] = useState(false);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const router = useRouter();
+
+  // New: search and filter modal states
   const [searchQuery, setSearchQuery] = useState("");
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [limit, setLimit] = useState(5);
@@ -78,9 +80,6 @@ const Home = () => {
   const [propertyUse, setPropertyUse] = useState("");
   const [filteredSubRegions, setFilteredSubRegions] = useState([]);
   const [filteredLocations, setFilteredLocations] = useState([]);
-  const [closestProperties, setClosestProperties] = useState([]);
-  const [locationPermission, setLocationPermission] = useState(null);
-  const router = useRouter();
 
   const loadColorScheme = async () => {
     try {
@@ -311,91 +310,12 @@ const Home = () => {
     });
   };
 
-  // Ask for location and fetch closest properties
-  useEffect(() => {
-    const fetchClosest = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      setLocationPermission(status);
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        return;
-      }
-      let userLocation = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = userLocation.coords;
-
-      // Just console log the user's coordinates
-      console.log("User's current coordinates:", { latitude, longitude });
-
-      // Find closest location, subregion, region
-      if (locations && locations.length > 0) {
-        // Find closest location by straight-line distance
-        const getDistance = (lat1, lon1, lat2, lon2) => {
-          return Math.sqrt(
-            Math.pow(lat1 - lat2, 2) + Math.pow(lon1 - lon2, 2)
-          );
-        };
-        let closestLoc = null;
-        let minDist = Infinity;
-        locations.forEach((loc) => {
-          if (loc.coordinates && loc.coordinates.coordinates) {
-            const [lng, lat] = loc.coordinates.coordinates;
-            const dist = getDistance(latitude, longitude, lat, lng);
-            if (dist < minDist) {
-              minDist = dist;
-              closestLoc = loc;
-            }
-          }
-        });
-
-        if (closestLoc) {
-          const subregionObj = subregions.find(
-            (sr) =>
-              sr._id ===
-              (closestLoc.subregion_id?._id || closestLoc.subregion_id)
-          );
-          const regionObj = regions.find(
-            (r) => r._id === (closestLoc.region_id?._id || closestLoc.region_id)
-          );
-          console.log(
-            "User is closest to:",
-            "\nLocation:",
-            closestLoc.location,
-            "\nSubregion:",
-            subregionObj?.subregion_name,
-            "\nRegion:",
-            regionObj?.region_name
-          );
-        } else {
-          console.log("Could not determine closest location/subregion/region.");
-        }
-      }
-
-      try {
-        const res = await fetch(
-          `${
-            process.env.EXPO_PUBLIC_API_URL || "http://192.168.5.1:4884"
-          }/api/v1/property/closest?lat=${latitude}&lng=${longitude}&limit=5`
-        );
-        const data = await res.json();
-        setClosestProperties(data);
-        console.log("Closest properties:", data);
-      } catch (err) {
-        console.error("Error fetching closest properties:", err);
-      }
-    };
-
-    fetchClosest();
-  }, []);
-
   return (
     <View className="bg-slate-300 dark:bg-[#09092B] flex-1">
       <View className="px-5 pt-5">
         {/* Header */}
         <View className="flex flex-row justify-between items-center mb-4">
-          <Text
-            className="text-2xl font-bold dark:text-slate-300"
-            onClick={() => console.log(closestProperties)}
-          >
+          <Text className="text-2xl font-bold dark:text-slate-300">
             Prime Property
           </Text>
           <View className="flex-row items-center">
@@ -583,44 +503,6 @@ const Home = () => {
             snapToAlignment="start"
             decelerationRate="fast"
             snapToInterval={CARD_WIDTH + 16}
-          />
-        </View>
-
-        {/* Closest to You Section */}
-        <View className="mb-6">
-          <SectionHeader title="Closest to You" onSeeAll={() => {}} />
-          <FlatList
-            data={closestProperties}
-            keyExtractor={(item) => item._id}
-            renderItem={useCallback(
-              ({ item }) => (
-                <PropertyItem
-                  item={item}
-                  onPress={handlePress}
-                  onFavorite={handleFavourite}
-                />
-              ),
-              [handlePress, handleFavourite]
-            )}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: SCREEN_WIDTH * 0.04,
-              paddingVertical: 8,
-            }}
-            ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
-            ListEmptyComponent={() => (
-              <View className="flex items-center justify-center p-4">
-                <Text
-                  className="text-gray-500 dark:text-gray-400"
-                  style={{ fontSize: SCREEN_WIDTH * 0.035 }}
-                >
-                  {locationPermission === "granted"
-                    ? "No properties found near you"
-                    : "Location permission required"}
-                </Text>
-              </View>
-            )}
           />
         </View>
       </ScrollView>

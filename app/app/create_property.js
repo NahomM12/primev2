@@ -7,7 +7,7 @@ import {
 } from "../store/property/propertySlice";
 import { useDispatch, useSelector } from "react-redux";
 import PropertyForm from "../components/PropertyForm";
-import MapComponent from "../components/MapComponent";
+// import MapComponent from "../components/MapComponent";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import {
@@ -29,7 +29,6 @@ const CreateProperty = () => {
   const { propertyTypes } = useSelector((state) => state.propertyType);
   const [filteredSubRegions, setFilteredSubRegions] = useState([]);
   const [filteredLocations, setFilteredLocations] = useState([]);
-  const [coordinates, setCoordinates] = useState(null);
 
   useEffect(() => {
     dispatch(getAllRegions());
@@ -108,7 +107,8 @@ const CreateProperty = () => {
   // }, [isSuccess, isError]);
 
   const handleLocationSelect = (coords) => {
-    setCoordinates(coords);
+    const locationString = `${coords.latitude}, ${coords.longitude}`;
+    setFormData({ ...formData, location: locationString });
     setShowMapModal(false);
   };
 
@@ -136,7 +136,6 @@ const CreateProperty = () => {
       ...formData,
       propertyType: type,
       property_use: action,
-      coordinates,
     };
 
     const propertyData = {
@@ -305,7 +304,7 @@ const CreateProperty = () => {
             </View>
           </View>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => setShowMapModal(true)}
             className="bg-blue-50 dark:bg-blue-900/30 rounded-2xl mb-6 flex-row items-center"
             style={{ padding: 16 * SCALE_FACTOR }}
@@ -325,18 +324,16 @@ const CreateProperty = () => {
                 className="text-blue-600 dark:text-blue-400 font-semibold"
                 style={{ fontSize: 18 * SCALE_FACTOR }}
               >
-                Select Location on Map
+                Select Location
               </Text>
               <Text
                 className="text-blue-500 dark:text-blue-300 opacity-60"
                 style={{ fontSize: 14 * SCALE_FACTOR }}
               >
-                {coordinates
-                  ? `${coordinates.latitude}, ${coordinates.longitude}`
-                  : "Choose on map"}
+                {formData.location || "Choose on map"}
               </Text>
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity
             onPress={handleSubmit}
@@ -361,7 +358,7 @@ const CreateProperty = () => {
           onRequestClose={() => setShowMapModal(false)}
         >
           <View className="flex-1">
-            <MapComponent onLocationSelect={handleLocationSelect} />
+            {/* <MapComponent onLocationSelect={handleLocationSelect} /> */}
             <View style={{ padding: 24 * SCALE_FACTOR }}>
               <TouchableOpacity
                 onPress={() => setShowMapModal(false)}
