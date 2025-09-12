@@ -13,6 +13,7 @@ import {
   getNotifications,
   markNotificationAsRead,
   deleteNotification,
+  clearAllNotifications,
 } from "../store/notification/notificationSlice";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
@@ -23,13 +24,15 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
   const time = new Date(createdAt).toLocaleString();
   // Get icon based on notification type
   const getIcon = () => {
-    switch (type) {
-      case "success":
+    switch (messageType) {
+      case "approval":
         return "checkmark-circle-outline";
-      case "error":
-        return "alert-circle-outline";
-      case "warning":
-        return "warning-outline";
+      case "rejection":
+        return "close-circle-outline";
+      case "featured":
+        return "star-outline";
+      case "boost":
+        return "trending-up-outline";
       default:
         return "information-circle-outline";
     }
@@ -37,15 +40,17 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
 
   // Get color based on notification type
   const getColor = () => {
-    switch (type) {
-      case "success":
+    switch (messageType) {
+      case "approval":
         return "text-green-500";
-      case "error":
+      case "rejection":
         return "text-red-500";
-      case "warning":
+      case "featured":
         return "text-yellow-500";
-      default:
+      case "boost":
         return "text-blue-500";
+      default:
+        return "text-gray-500";
     }
   };
 
@@ -68,7 +73,7 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
             </Text>
             <Text className="text-xs text-gray-500 dark:text-gray-400">
               {time}
-            </Text>{" "}
+            </Text>
           </View>
         </View>
       </View>
@@ -108,6 +113,10 @@ const Notification = () => {
     dispatch(deleteNotification(id));
   };
 
+  const handleClearAllNotifications = () => {
+    dispatch(clearAllNotifications());
+  };
+
   const { notifications } = useSelector((state) => state.notification);
 
   return (
@@ -123,9 +132,14 @@ const Notification = () => {
           </Text>
         </View>
 
-        <TouchableOpacity className="p-2">
-          <Ionicons name="ellipsis-horizontal" size={24} color="#6B7280" />
-        </TouchableOpacity>
+        {notifications && notifications.length > 0 && (
+          <TouchableOpacity 
+            onPress={handleClearAllNotifications}
+            className="bg-red-500 px-3 py-1 rounded-full"
+          >
+            <Text className="text-white text-xs">Clear All</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Notifications List */}

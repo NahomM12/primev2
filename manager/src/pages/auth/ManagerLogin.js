@@ -1,31 +1,35 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import axios from 'axios'; 
-import { useDispatch } from 'react-redux';
-import { managerLogin } from '../../store/auth/authSlices';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { managerLogin } from "../../store/auth/authSlices";
 
 const ManagerLogin = () => {
-  const dispatch = useDispatch()
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const dispatch = useDispatch();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-     
-      dispatch(managerLogin({
-        email,password
-      }).then(navigate("/manager/dashboard")))
-                            
+
+    dispatch(
+      managerLogin({
+        email,
+        password,
+      })
+    )
+      .unwrap()
+      .then(() => navigate("/manager/dashboard"));
   };
 
   // Redirect to sign-up page
   const handleSignUp = () => {
-    navigate('/signup'); // Redirect to Signup page
+    navigate("/signup"); // Redirect to Signup page
   };
-  
+
   // useEffect(() => {
   //   if (isSuccess) {
   //     navigate("/manager/user-management");

@@ -161,8 +161,9 @@ const sendInAppNotification = async ({
       title,
       body,
       recipient: user._id,
-      status: "pending",
-
+      status: "sent",
+      messageType,
+      relatedProperty,
       createdAt: new Date(),
     });
 
@@ -232,10 +233,31 @@ const deleteNotification = async (req, res) => {
   }
 };
 
+const deleteAllNotifications = async (req, res) => {
+  try {
+    console.log("here")
+    const { id } = req.user; // Get user ID from auth middleware
+    console.log(req.user)
+    const result = await Notification.deleteMany({ recipient: id });
+    
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "No notifications found to delete" });
+    }
+    
+    res.status(200).json({ 
+      message: "All notifications deleted successfully",
+      deletedCount: result.deletedCount 
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createNotification,
   sendInAppNotification,
   getUserNotifications,
   markNotificationAsRead,
   deleteNotification,
+  deleteAllNotifications,
 };

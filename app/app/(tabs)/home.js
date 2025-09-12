@@ -46,6 +46,7 @@ import SectionHeader from "../../components/home/SectionHeader";
 import PropertyItem from "../../components/home/PropertyItem";
 import PropertyModal from "../../components/home/PropertyModal";
 import FilterModal from "../../components/home/FilterModal";
+import { useFocusEffect } from "@react-navigation/native";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CARD_ASPECT_RATIO = 0.8;
@@ -93,6 +94,12 @@ const Home = () => {
       console.error("Failed to load user data:", error);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(getNotifications());
+    }, [dispatch])
+  );
 
   useEffect(() => {
     loadColorScheme();

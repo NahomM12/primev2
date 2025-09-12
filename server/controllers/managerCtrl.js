@@ -100,8 +100,14 @@ const getRegionProperties = asyncHandler(async (req, res) => {
   const { id } = req.manager;
   try {
     const manager = await Manager.findById(id);
-    // const properties = await Property.find({ owner: id });
-    const properties = await Property.find({ region: manager.region_id })
+    console.log(manager);
+    // const properties = await Property.find({
+    //   "address.region": "676fe2884d8a1c1074c560e3",
+    // });
+    // console.log(properties);
+    const properties = await Property.find({
+      "address.region": manager.region_id,
+    })
       .populate("propertyType")
       .populate({
         path: "address.region",

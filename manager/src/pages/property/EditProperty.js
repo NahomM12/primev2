@@ -5,27 +5,27 @@ import { editProperty } from "../../store/property/propertySlice";
 const EditProperty = ({ setIsEdit, selectedProperty }) => {
   const dispatch = useDispatch();
 
-  const [userDetails, setUserDetails] = useState({  
+  const [details, setDetails] = useState({
     status: selectedProperty?.status || "unavailable",
-    reason: "",
+    message: "",
   });
 
   const handleDropdownChange = (e) => {
-    setUserDetails({ ...userDetails, status: e.target.value, reason: "" });
+    setDetails({ ...details, status: e.target.value, message: "" });
   };
 
   const handleInputChange = (e) => {
-    setUserDetails({ ...userDetails, [e.target.name]: e.target.value });
+    setDetails({ ...details, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = {
-      id: selectedProperty.id,
-      data: userDetails,
+      id: selectedProperty._id,
+      data: details,
     };
-    console.log(userDetails);
-     dispatch(editProperty(data));
+    console.log(details);
+    dispatch(editProperty(data));
     setIsEdit(false);
   };
 
@@ -37,7 +37,7 @@ const EditProperty = ({ setIsEdit, selectedProperty }) => {
           <label className="block text-sm font-medium">Status:</label>
           <select
             name="status"
-            value={userDetails.status}
+            value={details.status}
             onChange={handleDropdownChange}
             className="border p-2 w-full rounded"
             required
@@ -49,15 +49,15 @@ const EditProperty = ({ setIsEdit, selectedProperty }) => {
         </div>
 
         {/* Show Reason Input when status is unavailable */}
-        {userDetails.status === "rejected" && (
+        {details.status === "rejected" && (
           <div className="mt-4">
-            <label className="block text-sm font-medium">Reason:</label>
+            <label className="block text-sm font-medium">Message:</label>
             <textarea
-              name="reason"
-              value={userDetails.reason}
+              name="message"
+              value={details.message}
               onChange={handleInputChange}
               className="border p-2 w-full rounded"
-              placeholder="Enter the reason for unavailability"
+              placeholder="Enter the message for unavailability"
               required
             ></textarea>
           </div>

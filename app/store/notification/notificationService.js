@@ -54,10 +54,27 @@ const deleteNotification = async (notificationId) => {
   return response.data;
 };
 
+const clearAllNotifications = async () => {
+  const user = JSON.parse(await AsyncStorage.getItem("user"));
+  const token = user?.token;
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.delete(
+    `${baseUrl}/notification/clear-all`,
+    config
+  );
+  return response.data;
+};
+
 const notificationService = {
   getNotifications,
   markNotificationAsRead,
   deleteNotification,
+  clearAllNotifications,
 };
 
 export default notificationService;

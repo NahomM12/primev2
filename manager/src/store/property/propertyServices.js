@@ -29,7 +29,7 @@ const deleteProperty = async (id) => {
 const editProperty = async (data) => {
   console.log(data);
   const response = await axios.put(
-    `${base_url}/properties${data.id}`,
+    `${base_url}/property/property-status/${data.id}`,
     data.data
   );
   return response.data;

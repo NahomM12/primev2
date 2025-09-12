@@ -24,7 +24,9 @@ const customModalStyles = {
 
 const PropertyManagement = () => {
   const dispatch = useDispatch();
-  const { properties, totalProperties,totalSales, totalRents } = useSelector((state) => state.property);
+  const { properties, totalProperties, totalSales, totalRents } = useSelector(
+    (state) => state.property
+  );
 
   const [isView, setIsView] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -71,14 +73,23 @@ const PropertyManagement = () => {
           <div className="flex items-center mt-2">
             <FiHome className="text-blue-500 text-4xl" />
             <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-800">{totalProperties}</p>
-              <p className="text-sm text-gray-500">431 more to break last month's record</p>
+              <p className="text-2xl font-bold text-gray-800">
+                {totalProperties}
+              </p>
+              <p className="text-sm text-gray-500">
+                431 more to break last month's record
+              </p>
             </div>
           </div>
         </div>
 
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-gray-600 font-bold"onClick={() => console.log(properties)}>Properties for Sale</h2>
+          <h2
+            className="text-gray-600 font-bold"
+            onClick={() => console.log(properties)}
+          >
+            Properties for Sale
+          </h2>
           <p className="text-2xl font-bold text-gray-800">{totalSales}</p>
           {/* <p className="text-sm text-gray-500">Target: 3k/month</p> */}
         </div>
@@ -135,18 +146,29 @@ const PropertyManagement = () => {
                   <span className="text-green-500">Available</span>
                 ) : property.status === "unavailable" ? (
                   <span className="text-blue-500">Unavailable</span>
-                ) : (
+                ) : property.status === "rejected" ? (
                   <span className="text-red-500">Rejected</span>
+                ) : (
+                  <span className="text-blue-500">pending</span>
                 )}
               </td>
               <td className="border px-4 py-2">
-                <button onClick={() => handleView(property)} className="text-gray-500 hover:underline mr-2">
+                <button
+                  onClick={() => handleView(property)}
+                  className="text-gray-500 hover:underline mr-2"
+                >
                   <FiEye size={16} />
                 </button>
-                <button onClick={() => handleEdit(property)} className="text-blue-500 hover:underline mr-2">
+                <button
+                  onClick={() => handleEdit(property)}
+                  className="text-blue-500 hover:underline mr-2"
+                >
                   <FiEdit2 size={16} />
                 </button>
-                <button onClick={() => handleDelete(property)} className="text-red-500 hover:underline">
+                <button
+                  onClick={() => handleDelete(property)}
+                  className="text-red-500 hover:underline"
+                >
                   <FiTrash2 size={16} />
                 </button>
               </td>
@@ -156,16 +178,37 @@ const PropertyManagement = () => {
       </table>
 
       {/* Modals */}
-      <Modal isOpen={isView} onRequestClose={() => setIsView(false)} style={customModalStyles}>
-        <ViewProperty setIsView={setIsView} selectedProperty={selectedProperty} />
+      <Modal
+        isOpen={isView}
+        onRequestClose={() => setIsView(false)}
+        style={customModalStyles}
+      >
+        <ViewProperty
+          setIsView={setIsView}
+          selectedProperty={selectedProperty}
+        />
       </Modal>
 
-      <Modal isOpen={isEdit} onRequestClose={() => setIsEdit(false)} style={customModalStyles}>
-        <EditProperty setIsEdit={setIsEdit} selectedProperty={selectedProperty} />
+      <Modal
+        isOpen={isEdit}
+        onRequestClose={() => setIsEdit(false)}
+        style={customModalStyles}
+      >
+        <EditProperty
+          setIsEdit={setIsEdit}
+          selectedProperty={selectedProperty}
+        />
       </Modal>
 
-      <Modal isOpen={isDelete} onRequestClose={() => setIsDelete(false)} style={customModalStyles}>
-        <DeleteProperty setIsDelete={setIsDelete} selectedProperty={selectedProperty} />
+      <Modal
+        isOpen={isDelete}
+        onRequestClose={() => setIsDelete(false)}
+        style={customModalStyles}
+      >
+        <DeleteProperty
+          setIsDelete={setIsDelete}
+          selectedProperty={selectedProperty}
+        />
       </Modal>
     </div>
   );
