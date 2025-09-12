@@ -56,7 +56,7 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
 
   return (
     <TouchableOpacity
-      onPress={() => !read && onMarkAsRead(_id)}
+      // onPress={() => !read && onMarkAsRead(_id)}
       className={`bg-white dark:bg-gray-800 rounded-xl p-8 mb-3 mx-4 shadow-sm ${
         read ? "opacity-60" : ""
       }`}
@@ -133,7 +133,7 @@ const Notification = () => {
         </View>
 
         {notifications && notifications.length > 0 && (
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleClearAllNotifications}
             className="bg-red-500 px-3 py-1 rounded-full"
           >
