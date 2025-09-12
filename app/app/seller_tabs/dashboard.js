@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { changeLanguageMode } from "../../store/auth/authSlice";
 import { useRouter } from "expo-router";
 import { getNotifications } from "../../store/notification/notificationSlice";
+import { useFocusEffect } from "@react-navigation/native";
 
 // Mock data
 const dashboardData = {
