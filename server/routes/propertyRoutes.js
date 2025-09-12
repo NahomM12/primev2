@@ -14,7 +14,7 @@ const {
   getAllViews,
   changeFeatured,
   changePropertyStatus,
-  getRejectionMessages,
+  // getRejectionMessages,
   getAllFeatured,
 } = require("../controllers/propertyCtrl");
 const { authMiddleware } = require("../middlewares/authMiddleware");
@@ -27,7 +27,7 @@ router.get("/type/:typeId", getPropertiesByType);
 router.get("/use/:use", getPropertiesByUse);
 router.get("/users-properties", authMiddleware, getUserProperties);
 // router.get("/rejected-message/:userId", getRejectionMessages);
-router.get("/rejected-message", authMiddleware, getRejectionMessages);
+// router.get("/rejected-message", authMiddleware, getRejectionMessages);
 router.get("/featured", getAllFeatured);
 router.put("/change-featured/:propId", changeFeatured);
 router.put("/property-status/:propId", changePropertyStatus);

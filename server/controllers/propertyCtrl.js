@@ -8,6 +8,10 @@ const Transaction = require("../models/transactionModel");
 const formidable = require("formidable").formidable;
 const { uploadToCloudinary } = require("../utils/cloudinary");
 const User = require("../models/userModel");
+const {
+  createNotification,
+  sendInAppNotification,
+} = require("./notificationController");
 
 const createProperty = asyncHandler(async (req, res) => {
   const form = formidable({
@@ -503,7 +507,16 @@ const changeFeatured = asyncHandler(async (req, res) => {
       },
       { new: true }
     );
-    console.log(property);
+
+    // Create featured notification
+    await sendInAppNotification({
+      title: "Property Featured!",
+      body: `Your property '${property.title}' has been featured!`,
+      recipient: property.owner.toString(),
+      messageType: "featured",
+      relatedProperty: property._id.toString(),
+    });
+
     res.json(property);
   } catch (error) {
     throw new Error(error);
@@ -526,10 +539,18 @@ const changePropertyStatus = asyncHandler(async (req, res) => {
         },
         { new: true }
       );
+
+      // Create approval notification
+      await sendInAppNotification({
+        title: "Property Approved!",
+        body: `Your property '${property.title}' has been approved and is now available.`,
+        recipient: property.owner.toString(),
+        messageType: "approval",
+        relatedProperty: property._id.toString(),
+      });
+
       res.json(property);
-    }
-    if (status === "rejected") {
-      // console.log("here");
+    } else if (status === "rejected") {
       const property = await Property.findByIdAndUpdate(
         propId,
         {
@@ -538,31 +559,18 @@ const changePropertyStatus = asyncHandler(async (req, res) => {
         },
         { new: true }
       );
+
+      // Create rejection notification
+      await sendInAppNotification({
+        title: "Property Rejected",
+        body: `Your property '${property.title}' was rejected. Reason: ${message}`,
+        recipient: property.owner.toString(),
+        messageType: "rejection",
+        relatedProperty: property._id.toString(),
+      });
+
       res.json(property);
     }
-  } catch (error) {
-    throw new Error(error);
-  }
-});
-
-const getRejectionMessages = asyncHandler(async (req, res) => {
-  const { id } = req.user;
-  // const { userId } = req.params;
-  try {
-    // const properties = await Property.find({ owner: id });
-    const properties = await Property.find({
-      owner: id,
-      status: "rejected",
-    }).select("is_rejected -_id");
-
-    console.log(properties);
-
-    const message = properties[0].is_rejected;
-    // console.log(message);
-
-    res.json({
-      message,
-    });
   } catch (error) {
     throw new Error(error);
   }
@@ -596,5 +604,4 @@ module.exports = {
   changeFeatured,
   getAllFeatured,
   changePropertyStatus,
-  getRejectionMessages,
 };

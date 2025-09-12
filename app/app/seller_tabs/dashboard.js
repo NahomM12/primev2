@@ -65,6 +65,8 @@ const Dashboard = () => {
   };
 
   const { userProperties } = useSelector((state) => state.property);
+  const { unreadCount } = useSelector((state) => state.notification);
+
   return (
     <ScrollView className="bg-slate-300 dark:bg-[#09092B] flex-1">
       <View className="p-5">
@@ -125,10 +127,11 @@ const Dashboard = () => {
                 size={24}
                 color="#6B7280"
               />
-              {/* Notification badge - if needed */}
-              <View className="absolute -top-1 -right-1 bg-red-500 w-4 h-4 rounded-full items-center justify-center">
-                <Text className="text-white text-xs">2</Text>
-              </View>
+              {unreadCount > 0 && (
+                <View className="absolute -top-1 -right-1 bg-red-500 w-4 h-4 rounded-full items-center justify-center">
+                  <Text className="text-white text-xs">{unreadCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>

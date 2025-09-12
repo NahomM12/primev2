@@ -9,12 +9,18 @@ import {
 import React, { useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { getRejectionMessages } from "../store/property/propertySlice";
+import {
+  getNotifications,
+  markNotificationAsRead,
+  deleteNotification,
+} from "../store/notification/notificationSlice";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 const { width: screenWidth } = Dimensions.get("window");
 
-const NotificationItem = ({ message, time, type = "info" }) => {
+const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
+  const { body: message, createdAt, messageType, read, _id } = notification;
+  const time = new Date(createdAt).toLocaleString();
   // Get icon based on notification type
   const getIcon = () => {
     switch (type) {
@@ -44,7 +50,12 @@ const NotificationItem = ({ message, time, type = "info" }) => {
   };
 
   return (
-    <View className="bg-white dark:bg-gray-800 rounded-xl p-8 mb-3 mx-4 shadow-sm">
+    <TouchableOpacity
+      onPress={() => !read && onMarkAsRead(_id)}
+      className={`bg-white dark:bg-gray-800 rounded-xl p-8 mb-3 mx-4 shadow-sm ${
+        read ? "opacity-60" : ""
+      }`}
+    >
       <View className="flex-row items-start space-x-3">
         <View className={`${getColor()} mt-1`}>
           <Ionicons name={getIcon()} size={24} color="#f00" />
@@ -52,16 +63,32 @@ const NotificationItem = ({ message, time, type = "info" }) => {
 
         <View className="flex-1">
           <View className="flex-row justify-between items-start">
-            <Text className=" font-medium text-lg text-gray-800 dark:text-white flex-1 mr-2">
+            <Text className="font-medium text-lg text-gray-800 dark:text-white flex-1 mr-2">
               {message}
             </Text>
-            {/* <Text className="text-xs text-gray-500 dark:text-gray-400">
-              {time || "Just now"}
-            </Text> */}
+            <Text className="text-xs text-gray-500 dark:text-gray-400">
+              {time}
+            </Text>{" "}
           </View>
         </View>
       </View>
-    </View>
+      <View className="flex-row justify-end mt-4">
+        {!read && (
+          <TouchableOpacity
+            onPress={() => onMarkAsRead(_id)}
+            className="bg-blue-500 px-3 py-1 rounded-full mr-2"
+          >
+            <Text className="text-white text-xs">Mark as Read</Text>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          onPress={() => onDelete(_id)}
+          className="bg-red-500 px-3 py-1 rounded-full"
+        >
+          <Text className="text-white text-xs">Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -70,10 +97,18 @@ const Notification = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getRejectionMessages());
-  }, []);
+    dispatch(getNotifications());
+  }, [dispatch]);
 
-  const { rejectedMessage } = useSelector((state) => state.property);
+  const handleMarkAsRead = (id) => {
+    dispatch(markNotificationAsRead(id));
+  };
+
+  const handleDeleteNotification = (id) => {
+    dispatch(deleteNotification(id));
+  };
+
+  const { notifications } = useSelector((state) => state.notification);
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-900">
@@ -99,9 +134,16 @@ const Notification = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingVertical: 16 }}
       >
-        {rejectedMessage?.message ? (
+        {notifications && notifications.length > 0 ? (
           <>
-            <NotificationItem message={rejectedMessage.message} type="error" />
+            {notifications.map((notification) => (
+              <NotificationItem
+                key={notification._id}
+                notification={notification}
+                onMarkAsRead={handleMarkAsRead}
+                onDelete={handleDeleteNotification}
+              />
+            ))}
           </>
         ) : (
           <View className="flex-1 items-center justify-center py-20">

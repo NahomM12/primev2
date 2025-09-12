@@ -290,25 +290,6 @@ const changeFeatured = async (prodId) => {
   return response.data;
 };
 
-const getRejectionMessages = async () => {
-  const userData = await AsyncStorage.getItem("user");
-  const getTokenFromLocalStorage = userData ? JSON.parse(userData) : null;
-
-  const config = {
-    headers: {
-      Authorization: `Bearer ${
-        getTokenFromLocalStorage ? getTokenFromLocalStorage.token : ""
-      }`,
-    },
-    withCredentials: true,
-  };
-  const response = await axios.get(
-    `${baseUrl}/property/rejected-message`,
-    config
-  );
-  return response.data;
-};
-
 const getAllFeatured = async () => {
   const response = await axios.get(`${baseUrl}/property/featured`);
   return response.data;
@@ -325,7 +306,6 @@ const propertyService = {
   changeView,
   getAllViews,
   changeFeatured,
-  getRejectionMessages,
   getAllFeatured,
 };
 

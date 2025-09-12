@@ -16,6 +16,7 @@ import React, { useEffect, useState, useCallback, memo } from "react";
 import { useColorScheme } from "nativewind";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch, useSelector } from "react-redux";
+import { getNotifications } from "../../store/notification/notificationSlice";
 import {
   getAllRentProperties,
   getAllSellProperties,
@@ -113,6 +114,7 @@ const Home = () => {
     (state) => state.address
   );
   const { propertyTypes } = useSelector((state) => state.propertyType);
+  const { unreadCount } = useSelector((state) => state.notification);
 
   const { t, i18n } = useTranslation();
 
@@ -368,9 +370,11 @@ const Home = () => {
                 size={24}
                 color="#6B7280"
               />
-              <View className="absolute -top-1 -right-1 bg-red-500 w-4 h-4 rounded-full items-center justify-center">
-                <Text className="text-white text-xs">2</Text>
-              </View>
+              {unreadCount > 0 && (
+                <View className="absolute -top-1 -right-1 bg-red-500 w-4 h-4 rounded-full items-center justify-center">
+                  <Text className="text-white text-xs">{unreadCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>

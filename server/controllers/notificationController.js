@@ -99,7 +99,7 @@ const { sendNotification } = require("../services/notificationService");
 const User = require("../models/userModel"); // <-- Add this
 
 const createNotification = async (req, res) => {
-  const { title, body, recipient } = req.body;
+  const { title, body, recipient, messageType, relatedProperty } = req.body;
 
   try {
     if (!title || !body || !recipient) {
@@ -122,6 +122,7 @@ const createNotification = async (req, res) => {
       body,
       recipient: user._id,
       status: "pending",
+
       createdAt: new Date(),
     });
 
@@ -139,4 +140,102 @@ const createNotification = async (req, res) => {
   }
 };
 
-module.exports = { createNotification };
+const sendInAppNotification = async ({
+  title,
+  body,
+  recipient,
+  messageType,
+  relatedProperty,
+}) => {
+  try {
+    if (!title || !body || !recipient) {
+      throw new Error("Title, body, and recipient are required.");
+    }
+
+    const user = await User.findById(recipient);
+    if (!user) {
+      throw new Error("Recipient user not found.");
+    }
+
+    const notification = await Notification.create({
+      title,
+      body,
+      recipient: user._id,
+      status: "pending",
+
+      createdAt: new Date(),
+    });
+
+    return notification;
+  } catch (error) {
+    console.error("Error sending in-app notification:", error);
+    throw error;
+  }
+};
+
+const getUserNotifications = async (req, res) => {
+  try {
+    const { id } = req.user; // Assuming user ID is available from authentication middleware
+
+    const notifications = await Notification.find({
+      recipient: id,
+      messageType: {
+        $in: [
+          "property_status_change",
+          "featured_property",
+          "rejection",
+          "approval",
+          "boost",
+        ],
+      },
+    })
+      .sort({ createdAt: -1 })
+      .populate("relatedProperty", "title");
+
+    return res.status(200).json(notifications);
+  } catch (error) {
+    console.error("Error fetching user notifications:", error);
+    return res.status(500).json({
+      message: "Failed to fetch notifications.",
+      error: error.message,
+    });
+  }
+};
+
+const markNotificationAsRead = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const notification = await Notification.findByIdAndUpdate(
+      id,
+      { read: true },
+      { new: true }
+    );
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+    res.status(200).json(notification);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteNotification = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const notification = await Notification.findByIdAndDelete(id);
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+    res.status(200).json({ message: "Notification deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  createNotification,
+  sendInAppNotification,
+  getUserNotifications,
+  markNotificationAsRead,
+  deleteNotification,
+};

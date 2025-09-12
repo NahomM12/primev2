@@ -4,6 +4,7 @@ import propertyTypeReducer from "./propertyType/propertyTypeSlice";
 import propertyReducer from "./property/propertySlice";
 import addressReducer from "./address/addressSlice";
 import paymentReducer from "./payment/paymentSlice";
+import notificationReducer from "./notification/notificationSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
     property: propertyReducer,
     address: addressReducer,
     payment: paymentReducer,
+    notification: notificationReducer,
   },
 });

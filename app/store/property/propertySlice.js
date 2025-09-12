@@ -141,17 +141,6 @@ export const changeFeatured = createAsyncThunk(
   }
 );
 
-export const getRejectionMessages = createAsyncThunk(
-  "property/reject-message",
-  async (_, thunkAPI) => {
-    try {
-      return await propertyService.getRejectionMessages();
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error);
-    }
-  }
-);
-
 export const getAllFeatured = createAsyncThunk(
   "property/featured",
   async (_, thunkAPI) => {
@@ -172,6 +161,7 @@ export const propertySlice = createSlice({
       sell: [],
       rent: [],
     },
+    rejectedMessage: null,
   },
   reducers: {
     resetAuthState: (state) => {
@@ -357,20 +347,6 @@ export const propertySlice = createSlice({
         state.featuredProperties = action.payload;
       })
       .addCase(getAllFeatured.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.message = action.payload;
-      })
-      .addCase(getRejectionMessages.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(getRejectionMessages.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.rejectedMessage = action.payload;
-        console.log(action.payload);
-      })
-      .addCase(getRejectionMessages.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;

@@ -18,6 +18,20 @@ const notificationSchema = new mongoose.Schema({
     enum: ["sent", "failed", "pending"],
     default: "pending",
   },
+  messageType: {
+    type: String,
+    enum: ["rejection", "approval", "featured", "boost"],
+    required: false,
+  },
+  read: {
+    type: Boolean,
+    default: false,
+  },
+  relatedProperty: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Property",
+    required: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
