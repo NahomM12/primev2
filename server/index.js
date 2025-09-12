@@ -1,7 +1,5 @@
 const express = require("express");
-const http = require("http");
 const app = express();
-const server = http.createServer(app);
 const dotenv = require("dotenv");
 dotenv.config();
 const connectDB = require("./config/db");
@@ -9,9 +7,6 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const morgan = require("morgan");
 const { errorHandler, notFound } = require("./middlewares/errorHandler");
-const rabbitMQService = require("./services/rabbitMQService");
-const notificationMessageBroker = require("./services/notificationMessageBroker");
-const webSocketService = require("./services/webSocketService");
 const authRouter = require("./routes/authRoutes");
 const adminRouter = require("./routes/adminRoutes");
 const managerRouter = require("./routes/managerRoutes");
@@ -84,28 +79,6 @@ app.use("/api/v1/notification", notificationRouter);
 app.use(notFound);
 app.use(errorHandler);
 
-const initializeServices = async () => {
-  try {
-    // Initialize RabbitMQ connection
-    await rabbitMQService.initialize();
-    console.log('RabbitMQ service initialized successfully');
-    
-    // Initialize notification message broker
-    await notificationMessageBroker.initialize();
-    console.log('Notification message broker initialized successfully');
-    
-    // Start the server after services are initialized
-    server.listen(PORT, () => {
-      console.log(`HTTP server running on port ${PORT}`);
-      
-      // Initialize WebSocket service with the HTTP server
-      webSocketService.initialize(server);
-    });
-  } catch (error) {
-    console.error('Failed to initialize services:', error);
-    process.exit(1);
-  }
-};
-
-// Start the application with all required services
-initializeServices();
+app.listen(PORT, (req, res) => {
+  console.log(`server running on port ${PORT}`);
+});

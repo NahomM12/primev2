@@ -6,6 +6,7 @@ import { getUserProperties } from "../../store/property/propertySlice";
 import { useTranslation } from "react-i18next";
 import { changeLanguageMode } from "../../store/auth/authSlice";
 import { useRouter } from "expo-router";
+import { getNotifications } from "../../store/notification/notificationSlice";
 
 // Mock data
 const dashboardData = {
@@ -49,6 +50,12 @@ const Dashboard = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
+
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(getNotifications());
+    }, [dispatch])
+  );
 
   useEffect(() => {
     dispatch(getUserProperties());
