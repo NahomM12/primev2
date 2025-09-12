@@ -96,7 +96,8 @@
 
 const Notification = require("../models/notificationModel");
 const { sendNotification } = require("../services/notificationService");
-const User = require("../models/userModel"); // <-- Add this
+const User = require("../models/userModel");
+const notificationMessageBroker = require("../services/notificationMessageBroker");
 
 const createNotification = async (req, res) => {
   const { title, body, recipient, messageType, relatedProperty } = req.body;
@@ -166,6 +167,9 @@ const sendInAppNotification = async ({
       relatedProperty,
       createdAt: new Date(),
     });
+    
+    // Publish new notification event to RabbitMQ
+    await notificationMessageBroker.publishNewNotification(notification, user._id);
 
     return notification;
   } catch (error) {
@@ -214,6 +218,10 @@ const markNotificationAsRead = async (req, res) => {
     if (!notification) {
       return res.status(404).json({ message: "Notification not found" });
     }
+    
+    // Publish notification read event to RabbitMQ
+    await notificationMessageBroker.publishNotificationRead(id, req.user.id);
+    
     res.status(200).json(notification);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -227,6 +235,10 @@ const deleteNotification = async (req, res) => {
     if (!notification) {
       return res.status(404).json({ message: "Notification not found" });
     }
+    
+    // Publish notification delete event to RabbitMQ
+    await notificationMessageBroker.publishNotificationDelete(id, req.user.id);
+    
     res.status(200).json({ message: "Notification deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -235,14 +247,15 @@ const deleteNotification = async (req, res) => {
 
 const deleteAllNotifications = async (req, res) => {
   try {
-    console.log("here")
     const { id } = req.user; // Get user ID from auth middleware
-    console.log(req.user)
     const result = await Notification.deleteMany({ recipient: id });
     
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: "No notifications found to delete" });
     }
+    
+    // Publish delete all notifications event to RabbitMQ
+    await notificationMessageBroker.publishDeleteAllNotifications(id, result.deletedCount);
     
     res.status(200).json({ 
       message: "All notifications deleted successfully",

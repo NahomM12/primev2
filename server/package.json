@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "amqplib": "^0.10.9",
     "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
@@ -25,7 +26,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.6.1",
     "morgan": "^1.10.0",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
