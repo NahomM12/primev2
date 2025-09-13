@@ -30,7 +30,7 @@ const login = asyncHandler(async (req, res) => {
     const manager = await Manager.findOne({ email });
     console.log(manager);
     if (!manager) throw new Error("manager doesn't exists");
-    if (manager && password == manager.password) {
+    if (manager && (await manager.isPasswordMatched(password))) {
       const refreshToken = generateRefreshToken(manager._id);
       const updateduser = await Manager.findByIdAndUpdate(
         manager._id,
