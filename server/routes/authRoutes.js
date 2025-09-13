@@ -10,6 +10,7 @@ const {
   changeLanguage,
   updateUser,
   savePushToken,
+  changePassword,
 } = require("../controllers/authCtrl");
 const { authMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -23,6 +24,7 @@ router.put("/add-wishlist", authMiddleware, addToWishlist);
 router.get("/all-wishlists", authMiddleware, getWishlist);
 router.put("/change-mode", authMiddleware, changeMode);
 router.put("/change-language", authMiddleware, changeLanguage);
+router.put("/change-password", authMiddleware, changePassword);
 router.post("/save-push-token", authMiddleware, savePushToken);
 
 module.exports = router;

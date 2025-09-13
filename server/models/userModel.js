@@ -78,6 +78,10 @@ var userSchema = new mongoose.Schema(
         default: "Eng",
       },
     },
+    passwordChangedAt: {
+      type: Date,
+      default: Date.now(),
+    },
     refershToken: { type: String },
     pushToken: { type: String },
   },
@@ -100,7 +104,6 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.isPasswordMatched = async function (enteredPassword) {
-  console.log(this.password);
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

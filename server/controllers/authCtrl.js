@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const { generateRefreshToken } = require("../config/refreshToken");
 const { generateToken } = require("../config/jwtToken");
+const bcrypt = require("bcryptjs");
 
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -222,6 +223,85 @@ const savePushToken = asyncHandler(async (req, res) => {
   }
 });
 
+const changePassword = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+
+  // Validate required fields
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Current password, new password, and confirm password are required",
+    });
+  }
+
+  // Check if new password and confirm password match
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "New password and confirm password do not match",
+    });
+  }
+
+  // Check if new password is different from current password
+  if (currentPassword === newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "New password must be different from current password",
+    });
+  }
+
+  try {
+    // Find user and verify current password
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await user.isPasswordMatched(
+      currentPassword
+    );
+
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSaltSync(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        password: hashedPassword,
+        passwordChangedAt: new Date(),
+      },
+      { new: true }
+    ).select("-password -refreshToken");
+
+    res.json({
+      success: true,
+      message: "Password updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating password",
+      details: error.message,
+    });
+  }
+});
+
 module.exports = {
   register,
   login,
@@ -233,4 +313,5 @@ module.exports = {
   changeMode,
   changeLanguage,
   savePushToken,
+  changePassword,
 };

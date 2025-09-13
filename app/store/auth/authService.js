@@ -170,6 +170,26 @@ const changeLanguageMode = async (data) => {
   return response.data;
 };
 
+const changePassword = async (data) => {
+  // console.log(data);
+  const userData = await AsyncStorage.getItem("user");
+  const getTokenFromLocalStorage = userData ? JSON.parse(userData) : null;
+
+  const headers = {
+    Authorization: `Bearer ${
+      getTokenFromLocalStorage ? getTokenFromLocalStorage.token : ""
+    }`,
+    // Accept: "application/json",
+  };
+
+  const response = await axios.put(`${baseUrl}/auth/change-password`, data, {
+    headers,
+    withCredentials: true,
+  });
+
+  return response.data;
+};
+
 const authService = {
   register,
   login,
@@ -180,6 +200,7 @@ const authService = {
   getWishlists,
   changeMode,
   changeLanguageMode,
+  changePassword,
 };
 
 export default authService;

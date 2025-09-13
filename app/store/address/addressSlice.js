@@ -19,7 +19,9 @@ export const getAllLocations = createAsyncThunk(
     try {
       return await addressService.getAllLocations();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -30,7 +32,9 @@ export const getAllRegions = createAsyncThunk(
     try {
       return await addressService.getAllRegions();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -41,7 +45,9 @@ export const getAllSubRegions = createAsyncThunk(
     try {
       return await addressService.getAllSubRegions();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );

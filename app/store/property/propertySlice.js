@@ -17,7 +17,9 @@ const initialState = {
 //     try {
 //       return propertyService.createProperty(data);
 //     } catch (error) {
-//       return thunkAPI.rejectWithValue(error);
+//       return thunkAPI.rejectWithValue(
+//   error.response?.data?.message || error.message
+// );
 //     }
 //   }
 // );
@@ -29,7 +31,9 @@ export const createProperty = createAsyncThunk(
       // const token = thunkAPI.getState().auth.user.token;
       return await propertyService.createProperty(propertyData);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -40,7 +44,9 @@ export const getAllProperties = createAsyncThunk(
     try {
       return propertyService.getAllProperties(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -51,7 +57,9 @@ export const getPropertiesByUse = createAsyncThunk(
     try {
       return await propertyService.getPropertiesByUse(use);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -62,7 +70,9 @@ export const getUserProperties = createAsyncThunk(
     try {
       return propertyService.getUserProperties();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -103,7 +113,9 @@ export const getUserTransactions = createAsyncThunk(
     try {
       return await propertyService.getUserTransactions();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -125,7 +137,9 @@ export const getAllViews = createAsyncThunk(
     try {
       return await propertyService.getAllViews();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -136,7 +150,9 @@ export const changeFeatured = createAsyncThunk(
     try {
       return await propertyService.changeFeatured(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -147,7 +163,9 @@ export const getAllFeatured = createAsyncThunk(
     try {
       return await propertyService.getAllFeatured();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );

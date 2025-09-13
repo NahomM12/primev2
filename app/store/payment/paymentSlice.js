@@ -16,7 +16,9 @@ export const initializePayment = createAsyncThunk(
     try {
       return await paymentService.initializePayment(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -27,7 +29,9 @@ export const verifyPayment = createAsyncThunk(
     try {
       return await paymentService.verifyPayment(reference);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );

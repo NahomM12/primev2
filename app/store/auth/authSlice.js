@@ -20,7 +20,9 @@ export const login = createAsyncThunk("auth/login", async (data, thunkAPI) => {
   try {
     return await authService.login(data);
   } catch (error) {
-    return thunkAPI.rejectWithValue(error.response.data);
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message || error.message
+    );
   }
 });
 
@@ -30,7 +32,9 @@ export const register = createAsyncThunk(
     try {
       return await authService.register(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -41,7 +45,9 @@ export const updateUser = createAsyncThunk(
     try {
       return await authService.updateUser(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -52,7 +58,9 @@ export const toggleDarkMode = createAsyncThunk(
     try {
       return await authService.toggleDarkMode(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -63,7 +71,9 @@ export const verifySeller = createAsyncThunk(
     try {
       return await authService.verifySeller();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -74,7 +84,9 @@ export const addToWishlist = createAsyncThunk(
     try {
       return await authService.addToWishlist(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -85,7 +97,9 @@ export const getWishlists = createAsyncThunk(
     try {
       return await authService.getWishlists();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -96,7 +110,9 @@ export const changeMode = createAsyncThunk(
     try {
       return await authService.changeMode(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -107,7 +123,22 @@ export const changeLanguageMode = createAsyncThunk(
     try {
       return await authService.changeLanguageMode(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
+export const changePassword = createAsyncThunk(
+  "user/change-password",
+  async (data, thunkAPI) => {
+    try {
+      return await authService.changePassword(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -202,6 +233,7 @@ const authSlice = createSlice({
         state.isSuccess = false;
         state.isError = true;
         state.message = action.error.message;
+        state.message = action.payload;
       })
       .addCase(verifySeller.pending, (state) => {
         state.isLoading = true;
@@ -222,6 +254,7 @@ const authSlice = createSlice({
         state.isSuccess = false;
         state.isError = true;
         state.message = action.error.message;
+        state.message = action.payload;
       })
       .addCase(addToWishlist.pending, (state) => {
         state.isLoading = true;
@@ -237,6 +270,7 @@ const authSlice = createSlice({
         state.isSuccess = false;
         state.isError = true;
         state.message = action.error.message;
+        state.message = action.payload;
       })
       .addCase(getWishlists.pending, (state) => {
         state.isLoading = true;
@@ -253,6 +287,7 @@ const authSlice = createSlice({
         state.isSuccess = false;
         state.isError = true;
         state.message = action.error.message;
+        state.message = action.payload;
       })
       .addCase(changeMode.pending, (state) => {
         state.isLoading = true;
@@ -270,6 +305,7 @@ const authSlice = createSlice({
         state.isSuccess = false;
         state.isError = true;
         state.message = action.error.message;
+        state.message = action.payload;
       })
       .addCase(changeLanguageMode.pending, (state) => {
         state.isLoading = true;
@@ -288,6 +324,23 @@ const authSlice = createSlice({
         state.isSuccess = false;
         state.isError = true;
         state.message = action.error.message;
+        state.message = action.payload;
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+        state.message = "password changed sucessfully";
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = false;
+        state.isError = true;
+        state.message = action.error.message;
+        state.message = action.payload;
       });
   },
 });

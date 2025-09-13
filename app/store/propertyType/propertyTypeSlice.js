@@ -14,7 +14,9 @@ export const createPropertyType = createAsyncThunk(
     try {
       return propertyTypeService.createPropertyType(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );
@@ -25,7 +27,9 @@ export const getAllPropertyTypes = createAsyncThunk(
     try {
       return propertyTypeService.getAllPropertyTypes();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
     }
   }
 );

@@ -19,6 +19,10 @@ var adminSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    passwordChangedAt: {
+      type: Date,
+      default: Date.now(),
+    },
     refreshToken: { type: String },
   },
   {
