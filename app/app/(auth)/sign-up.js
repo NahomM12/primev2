@@ -8,20 +8,42 @@ import { images } from "../../constants";
 import CustomButton from "../../components/CustomButton";
 import FormField from "../../components/FormField";
 import { register, resetAuthState } from "../../store/auth/authSlice";
+import { Picker } from "@react-native-picker/picker";
+
+import {
+  getAllLocations,
+  getAllRegions,
+  getAllSubRegions,
+} from "../../store/address/addressSlice";
 
 const SignUp = () => {
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getAllRegions());
+    dispatch(getAllSubRegions());
+    dispatch(getAllLocations());
+  }, []);
+
   const { isLoading, isSuccess, isError, message } = useSelector(
     (state) => state.auth
   );
+  const { regions, subregions, locations } = useSelector(
+    (state) => state.address
+  );
 
+  const [filteredRegions, setFilteredRegions] = useState([]);
+  const [filteredSubRegions, setFilteredSubRegions] = useState([]);
+  const [filteredLocations, setFilteredLocations] = useState([]);
   const [isSubmitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    // address: "",
+    region: "",
+    subRegion: "",
+    location: "",
     phone: "",
   });
 
@@ -30,7 +52,9 @@ const SignUp = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    // address: "",
+    region: "",
+    subRegion: "",
+    location: "",
     phone: "",
   });
 
@@ -41,7 +65,9 @@ const SignUp = () => {
       email: "",
       password: "",
       confirmPassword: "",
-      // address: "",
+      region: "",
+      subRegion: "",
+      location: "",
       phone: "",
     };
 
@@ -138,6 +164,37 @@ const SignUp = () => {
     return isValid;
   };
 
+  useEffect(() => {
+    if (form.region) {
+      const regionSubRegions = subregions.filter(
+        (subRegion) => subRegion.region_id?._id === form.region
+      );
+      setFilteredSubRegions(regionSubRegions);
+      // Reset dependent fields
+      setForm((prev) => ({
+        ...prev,
+        subRegion: "",
+        location: "",
+      }));
+      setFilteredLocations([]);
+    }
+  }, [form.region, subregions]);
+
+  // Handle subregion selection
+  useEffect(() => {
+    if (form.subRegion) {
+      console.log(locations);
+      const subRegionLocations = locations.filter(
+        (location) => location.subregion_id?._id === form.subRegion
+      );
+      setFilteredLocations(subRegionLocations);
+      setForm((prev) => ({
+        ...prev,
+        location: "",
+      }));
+    }
+  }, [form.subRegion, form.region, locations]);
+
   const handleChange = (field, value) => {
     setForm((prev) => ({
       ...prev,
@@ -163,6 +220,11 @@ const SignUp = () => {
         name: form.name.trim(),
         email: form.email.toLowerCase(),
         password: form.password,
+        address: {
+          region: form.region,
+          subregion: form.subRegion,
+          location: form.location,
+        },
         // address: form.address.trim(),
         phone: form.phone.trim(),
       };
@@ -258,6 +320,99 @@ const SignUp = () => {
               error={errors.phone}
               containerStyle="bg-white"
             />
+            {/* Region Picker */}
+            <View className="mb-4">
+              <Text className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                Region
+              </Text>
+              <View className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <Picker
+                  selectedValue={form.region}
+                  onValueChange={(itemValue, itemIndex) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      region: itemValue,
+                    }));
+                  }}
+                  style={{ height: 50, width: "100%" }}
+                >
+                  <Picker.Item label="Select Region" value="" />
+                  {regions?.map((region) => (
+                    <Picker.Item
+                      key={region._id}
+                      label={region.region_name}
+                      value={region._id}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+
+            {/* Sub Region Picker */}
+            <View className="mb-4">
+              <Text className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                Sub Region
+              </Text>
+              <View
+                className={`bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 ${
+                  !form.region ? "opacity-50" : ""
+                }`}
+              >
+                <Picker
+                  selectedValue={form.subRegion}
+                  onValueChange={(itemValue, itemIndex) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      subRegion: itemValue,
+                    }));
+                  }}
+                  style={{ height: 50, width: "100%" }}
+                  enabled={!!form.region}
+                >
+                  <Picker.Item label="Select Sub Region" value="" />
+                  {filteredSubRegions?.map((subRegion) => (
+                    <Picker.Item
+                      key={subRegion._id}
+                      label={subRegion.subregion_name}
+                      value={subRegion._id}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+
+            {/* Location Picker */}
+            <View>
+              <Text className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                Location
+              </Text>
+              <View
+                className={`bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 ${
+                  !form.subRegion ? "opacity-50" : ""
+                }`}
+              >
+                <Picker
+                  selectedValue={form.location}
+                  onValueChange={(itemValue, itemIndex) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      location: itemValue,
+                    }));
+                  }}
+                  style={{ height: 50, width: "100%" }}
+                  enabled={!!form.subRegion}
+                >
+                  <Picker.Item label="Select Location" value="" />
+                  {filteredLocations?.map((location) => (
+                    <Picker.Item
+                      key={location._id}
+                      label={location.location}
+                      value={location._id}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            </View>
 
             {/* <FormField
               title="Address"

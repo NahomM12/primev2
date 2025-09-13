@@ -18,10 +18,15 @@ const register = asyncHandler(async (req, res) => {
 
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body);
   try {
     const user = await User.findOne({ email });
+    console.log(user);
     if (!user) throw new Error("user doesn't exists");
-    if (user && password === user.password) {
+
+    if (user && (await user.isPasswordMatched(password))) {
+      console.log("here");
+
       const refreshToken = generateRefreshToken(user._id);
       const updateduser = await User.findByIdAndUpdate(
         user._id,
@@ -45,6 +50,7 @@ const login = asyncHandler(async (req, res) => {
         preference: updateduser?.preference,
         wishlist: updateduser?.wishlist,
         seller_tab: updateduser?.seller_tab,
+        address: updateduser?.address,
         mode: updateduser?.mode,
         token: accessToken,
       });
