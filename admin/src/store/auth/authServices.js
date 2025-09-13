@@ -1,12 +1,6 @@
 import { base_url } from "../../api/axiosConfig";
 import axios from "axios";
 
-const getAuthToken = () => {
-  const adminData = localStorage.getItem("admin");
-  const admin = adminData ? JSON.parse(adminData) : null;
-  return admin?.token || "";
-};
-
 // Admin Register
 const adminRegister = async (data) => {
   const response = await axios.post(`${base_url}/admin/register`, data);
@@ -24,14 +18,7 @@ const adminLogin = async (data) => {
 
 // Update Profile
 const updateProfile = async (data) => {
-  const token = getAuthToken();
-
-  const response = await axios.put(`${base_url}/admin/update-profile`, data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    withCredentials: true,
-  });
+  const response = await axios.put(`${base_url}/profile/update`, data);
   return response.data;
 };
 
@@ -40,8 +27,29 @@ const changeDarkMode = async (data) => {
   const response = await axios.put(`${base_url}/profile/darkmode`, data);
   return response.data;
 };
+// Change Password
+const changePassword = async (data) => {
+  console.log(data);
+  const userData = await localStorage.getItem("admin");
+  const getTokenFromLocalStorage = userData ? JSON.parse(userData) : null;
+
+  console.log(userData);
+
+  const headers = {
+    Authorization: `Bearer ${
+      getTokenFromLocalStorage ? getTokenFromLocalStorage.token : ""
+    }`,
+  };
+
+  const response = await axios.put(`${base_url}/admin/update-password`, data, {
+    headers,
+    withCredentials: true,
+  });
+  return response.data;
+};
 
 const authService = {
+  changePassword,
   adminRegister,
   adminLogin,
   updateProfile,

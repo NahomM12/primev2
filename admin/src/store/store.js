@@ -10,6 +10,7 @@ import locationReducer from "./address/location/locationSlice"
 import transactionReducer from "./transaction/transactionSlice";  
 import saleReducer from "./sale/saleSlice"
 import darkModeReducer from "./darkMode/darkModeSlice"
+import notificationReducer from "./notification/notificationSlice"
 
 export const store = configureStore({
   reducer: {
@@ -21,8 +22,10 @@ export const store = configureStore({
     transaction: transactionReducer,
     sale: saleReducer,
     property: propertyReducer,
+    
     manager: managerReducer,
     propertyType: propertyTypeReducer,
-    darkMode: darkModeReducer
+    darkMode: darkModeReducer,
+    notification: notificationReducer,
   },
 });

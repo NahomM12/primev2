@@ -5,6 +5,7 @@ const { generateToken } = require("../config/jwtToken");
 const User = require("../models/userModel");
 const Manager = require("../models/managerModel");
 const Transaction = require("../models/transactionModel");
+const bcrypt = require("bcryptjs");
 
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;

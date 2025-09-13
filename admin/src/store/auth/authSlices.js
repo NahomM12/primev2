@@ -35,6 +35,20 @@ export const adminRegister = createAsyncThunk(
     }
   }
 );
+// 🔑 Change Password
+export const changePassword = createAsyncThunk(
+  "auth/changePassword",
+  async (data, thunkAPI) => {
+    try {
+      return await authService.changePassword(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
 
 export const updateProfile = createAsyncThunk(
   "auth/update-profile",
@@ -46,6 +60,7 @@ export const updateProfile = createAsyncThunk(
     }
   }
 );
+
 
 export const changeDarkMode = createAsyncThunk(
   "auth/change-dark-mode",
@@ -75,6 +90,25 @@ export const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+    // Change Password
+      .addCase(changePassword.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.isError = false;
+        state.message = "Password changed successfully!";
+        toast.success("Password changed successfully!");
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = false;
+        state.isError = true;
+        state.message = action.payload;
+        toast.error(action.payload);
+      })
+  
       // Login
       .addCase(adminLogin.pending, (state) => {
         state.isLoading = true;

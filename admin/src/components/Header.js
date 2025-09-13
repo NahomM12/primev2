@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiLogOut, FiMoon, FiSun, FiSearch, FiBell } from "react-icons/fi";
+import { FiLogOut, FiKey,FiMoon, FiSun, FiSearch, FiBell } from "react-icons/fi";
 import { MdAccountCircle } from "react-icons/md";
 import { changeDarkMode } from "../store/auth/authSlices";
 import { useDispatch } from "react-redux";
@@ -42,6 +42,10 @@ const Navbar = () => {
     navigate("/login");
     window.location.reload();
   };
+  const handleChangePassword = () => {
+    navigate("change-password");
+    setShowDropdown(false);
+  }
 
   const handleProfile = () => {
     navigate("profile");
@@ -133,6 +137,15 @@ const Navbar = () => {
                 <MdAccountCircle className="mr-3 text-blue-500" />
                 View Profile
               </button>
+              {/* 🔑 Change Password */}
+    <button
+      onClick={handleChangePassword}   // 👉 define this function in your component
+      className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-yellow-50 dark:hover:bg-gray-700 transition-colors"
+    >
+      <FiKey className="mr-3 text-yellow-500" /> {/* you can use FiKey or any other icon */}
+      Change Password
+    </button>
+    
               
               <button
                 onClick={handleLogout}

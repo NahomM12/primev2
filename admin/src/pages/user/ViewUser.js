@@ -16,6 +16,16 @@ const ViewUser = ({ setIsView, selectedUser }) => {
         <strong className="text-sm font-medium">Phone:</strong>
         <p className="ml-2">{selectedUser.phone}</p>
       </div>
+       <div className="mb-2">
+        <strong className="text-sm font-medium">Status:</strong>
+        <p className="ml-2">{selectedUser?.status ?? "N/A"}</p>
+      </div>
+      <div className="mb-2">
+        <strong className="text-sm font-medium">Seller Tab:</strong>
+        <p className="ml-2">
+          {selectedUser?.seller_tab ? "Verified Seller" : "Not Verified"}
+        </p>
+      </div>
       <div className="mt-4">
         <button
           onClick={() => setIsView(false)}

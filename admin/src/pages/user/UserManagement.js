@@ -100,6 +100,7 @@ const UserManagement = () => {
             <th className="border px-4 py-2">Email</th>
             <th className="border px-4 py-2">Phone</th>
             <th className="border px-4 py-2">Created</th>
+            
             <th className="border px-4 py-2">Actions</th>
           </tr>
         </thead>
@@ -114,6 +115,12 @@ const UserManagement = () => {
                 <td className="border px-4 py-2">{user?.name}</td>
                 <td className="border px-4 py-2">{user?.email}</td>
                 <td className="border px-4 py-2">{user?.phone}</td>
+                <td className="py-2 px-4 border-r">
+                  {user.status ?? "N/A"}
+                </td>
+                <td className="py-2 px-4 border-r">
+                  {user.seller_tab ? "Verified Seller" : "Not Verified"}
+                </td>
                 <td className="border px-4 py-2">
                   {new Date(createdAt).toLocaleString()}
                 </td>

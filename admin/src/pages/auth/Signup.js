@@ -6,7 +6,7 @@ import axios from "axios";
 
 const Signup = () => {
   const dispatch = useDispatch();
-  const [name, setName] = useState("admin");
+  const [name, setName] = useState("");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,6 +70,7 @@ const Signup = () => {
               <label className="block text-gray-700">Full Name</label>
               <input
                 type="text"
+                onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
                 placeholder="Full name"
                 required

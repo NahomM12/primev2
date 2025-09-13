@@ -152,13 +152,14 @@ const Sidebar = () => {
         </NavLink>
 
         {/* Sale Transaction */}
-        <NavLink
+        {/* <NavLink
           to="/admin/sale"
           className={getNavClassName("/admin/sale")}
         >
           <FaMoneyBill className={collapsed ? "mx-auto" : "mr-3"} />
           {!collapsed && <span>Sale Transaction</span>}
-        </NavLink>
+        </NavLink> */}
+        
 
         {/* Rental Transaction */}
         <NavLink
@@ -168,6 +169,15 @@ const Sidebar = () => {
           <FaKey className={collapsed ? "mx-auto" : "mr-3"} />
           {!collapsed && <span>Rental Transaction</span>}
         </NavLink>
+        {/* Notification */}
+<NavLink
+  to="/admin/notifications"
+  className={getNavClassName("/admin/notifications")}
+>
+  <FaBell className={collapsed ? "mx-auto" : "mr-3"} />
+  {!collapsed && <span>Notifications</span>}
+</NavLink>
+
 
         {/* Communications Dropdown */}
         {!collapsed && (
