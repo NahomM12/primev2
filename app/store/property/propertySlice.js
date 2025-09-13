@@ -170,11 +170,25 @@ export const getAllFeatured = createAsyncThunk(
   }
 );
 
+export const getNearbyProperties = createAsyncThunk(
+  "property/get-nearby",
+  async (_, thunkAPI) => {
+    try {
+      return await propertyService.getNearbyProperties();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
 export const propertySlice = createSlice({
   name: "property",
   initialState: {
     ...initialState,
     featuredProperties: [],
+    nearbyProperties: [],
     propertiesByUse: {
       sell: [],
       rent: [],
@@ -365,6 +379,20 @@ export const propertySlice = createSlice({
         state.featuredProperties = action.payload;
       })
       .addCase(getAllFeatured.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(getNearbyProperties.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getNearbyProperties.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.isError = false;
+        state.nearbyProperties = action.payload;
+      })
+      .addCase(getNearbyProperties.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;

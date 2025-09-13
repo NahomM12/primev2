@@ -24,6 +24,7 @@ import {
   buyProperty,
   getAllViews,
   changeView,
+  getNearbyProperties,
   getAllFeatured,
 } from "../../store/property/propertySlice";
 import {
@@ -98,6 +99,7 @@ const Home = () => {
   useFocusEffect(
     useCallback(() => {
       dispatch(getNotifications());
+      // dispatch(getNearbyProperties());
     }, [dispatch])
   );
 
@@ -110,13 +112,17 @@ const Home = () => {
     dispatch(getAllSubRegions());
     dispatch(getAllLocations());
     dispatch(getAllFeatured());
-    // New: property types for filter
+    dispatch(getNearbyProperties());
     dispatch(getAllPropertyTypes());
   }, []);
 
-  const { propertiesByUse, views, isSuccess, featuredProperties } = useSelector(
-    (state) => state.property
-  );
+  const {
+    propertiesByUse,
+    views,
+    isSuccess,
+    featuredProperties,
+    nearbyProperties,
+  } = useSelector((state) => state.property);
   const { regions, subregions, locations } = useSelector(
     (state) => state.address
   );
@@ -319,6 +325,17 @@ const Home = () => {
     });
   };
 
+  const renderPropertyItem = useCallback(
+    ({ item }) => (
+      <PropertyItem
+        item={item}
+        onPress={handlePress}
+        onFavorite={handleFavourite}
+      />
+    ),
+    [handlePress, handleFavourite]
+  );
+
   return (
     <View className="bg-slate-300 dark:bg-[#09092B] flex-1">
       <View className="px-5 pt-5">
@@ -410,16 +427,7 @@ const Home = () => {
           <FlatList
             data={featuredProperties}
             keyExtractor={(item) => item._id}
-            renderItem={useCallback(
-              ({ item }) => (
-                <PropertyItem
-                  item={item}
-                  onPress={handlePress}
-                  onFavorite={handleFavourite}
-                />
-              ),
-              [handlePress, handleFavourite]
-            )}
+            renderItem={renderPropertyItem}
             horizontal
             showsHorizontalScrollIndicator={false}
             removeClippedSubviews={true}
@@ -447,6 +455,31 @@ const Home = () => {
           />
         </View>
 
+        {nearbyProperties && nearbyProperties.length > 0 && (
+          <View className="mb-6">
+            <SectionHeader
+              title="properties_closest_to_you"
+              onSeeAll={() => handleSeeAll("nearby")}
+            />
+            <FlatList
+              data={nearbyProperties}
+              keyExtractor={(item) => item._id}
+              renderItem={renderPropertyItem}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={5}
+              windowSize={5}
+              initialNumToRender={3}
+              contentContainerStyle={{
+                paddingHorizontal: SCREEN_WIDTH * 0.04,
+                paddingVertical: 8,
+              }}
+              ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
+            />
+          </View>
+        )}
+
         <View className="mb-6">
           <SectionHeader
             title={t("available_for_sell")}
@@ -455,16 +488,7 @@ const Home = () => {
           <FlatList
             data={propertiesByUse.sell}
             keyExtractor={(item) => item._id}
-            renderItem={useCallback(
-              ({ item }) => (
-                <PropertyItem
-                  item={item}
-                  onPress={handlePress}
-                  onFavorite={handleFavourite}
-                />
-              ),
-              [handlePress, handleFavourite]
-            )}
+            renderItem={renderPropertyItem}
             horizontal
             showsHorizontalScrollIndicator={false}
             removeClippedSubviews={true}
@@ -490,16 +514,7 @@ const Home = () => {
           <FlatList
             data={propertiesByUse.rent}
             keyExtractor={(item) => item._id}
-            renderItem={useCallback(
-              ({ item }) => (
-                <PropertyItem
-                  item={item}
-                  onPress={handlePress}
-                  onFavorite={handleFavourite}
-                />
-              ),
-              [handlePress, handleFavourite]
-            )}
+            renderItem={renderPropertyItem}
             horizontal
             showsHorizontalScrollIndicator={false}
             removeClippedSubviews={true}

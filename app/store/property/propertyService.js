@@ -295,6 +295,25 @@ const getAllFeatured = async () => {
   return response.data;
 };
 
+const getNearbyProperties = async () => {
+  const userData = await AsyncStorage.getItem("user");
+  const getTokenFromLocalStorage = userData ? JSON.parse(userData) : null;
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${
+        getTokenFromLocalStorage ? getTokenFromLocalStorage.token : ""
+      }`,
+    },
+    withCredentials: true,
+  };
+  const response = await axios.get(
+    `${baseUrl}/property/nearby-properties`,
+    config
+  );
+  return response.data;
+};
+
 const propertyService = {
   createProperty,
   getAllProperties,
@@ -307,6 +326,7 @@ const propertyService = {
   getAllViews,
   changeFeatured,
   getAllFeatured,
+  getNearbyProperties,
 };
 
 export default propertyService;

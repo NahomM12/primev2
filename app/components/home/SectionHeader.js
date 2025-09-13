@@ -10,4 +10,4 @@ const SectionHeader = ({ title, onSeeAll }) => (
   </View>
 );
 
-export default memo(SectionHeader); 
+export default memo(SectionHeader);
