@@ -34,6 +34,7 @@ import {
 } from "../../store/auth/authSlice";
 import { useTranslation } from "react-i18next";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import {
   getAllRegions,
@@ -84,6 +85,20 @@ const Home = () => {
   const [filteredSubRegions, setFilteredSubRegions] = useState([]);
   const [filteredLocations, setFilteredLocations] = useState([]);
 
+  const handleGetLocation = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      console.log("Permission to access location was denied");
+      Alert.alert(
+        "Permission denied",
+        "Permission to access location was denied"
+      );
+      return;
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    console.log(location);
+  };
   const loadColorScheme = async () => {
     try {
       const userData = JSON.parse(await AsyncStorage.getItem("user"));
@@ -341,9 +356,15 @@ const Home = () => {
       <View className="px-5 pt-5">
         {/* Header */}
         <View className="flex flex-row justify-between items-center mb-4">
-          <Text className="text-2xl font-bold dark:text-slate-300">
+          {/* <Text className="text-2xl font-bold dark:text-slate-300">
             Prime Property
-          </Text>
+          </Text> */}
+          <TouchableOpacity onPress={handleGetLocation}>
+            {/* <TouchableOpacity> */}
+            <Text className="text-2xl font-bold dark:text-slate-300">
+              Prime Property
+            </Text>
+          </TouchableOpacity>
           <View className="flex-row items-center">
             <View className="flex-row bg-white/90 dark:bg-gray-800/90 rounded-full mr-3 overflow-hidden">
               <TouchableOpacity

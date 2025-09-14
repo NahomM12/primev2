@@ -31,6 +31,17 @@ const propertySchema = new mongoose.Schema(
         required: true,
       },
     },
+    coords: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        // required: true,
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        // required: true,
+      },
+    },
     propertyType: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "PropertyType",
@@ -101,6 +112,9 @@ const propertySchema = new mongoose.Schema(
 
 // Index title for faster regex/text search on titles
 propertySchema.index({ title: 1 });
+
+// Index location for fast geospatial queries
+propertySchema.index({ coords: "2dsphere" });
 
 // Middleware to validate type-specific fields before saving
 propertySchema.pre("save", async function (next) {
