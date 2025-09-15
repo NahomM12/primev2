@@ -19,6 +19,8 @@ const regionRouter = require("./routes/regionRoutes");
 const subRegionRouter = require("./routes/subRegionRoutes");
 const paymentRouter = require("./routes/paymentRoute");
 const notificationRouter = require("./routes/notificationRoutes");
+const systemRouter = require("./routes/systemRoutes");
+const { initializeCleanup } = require("./utils/systemCleanup");
 // const User = require("./models/userModel");
 // const Manager = require("./models/managerModel");
 const PORT = process.env.PORT || 9001;
@@ -26,6 +28,9 @@ const PORT = process.env.PORT || 9001;
 // const User = require("./models/userModel");
 
 connectDB();
+
+initializeCleanup().catch(console.error);
+
 app.use(morgan("dev"));
 app.use(cookieParser());
 
@@ -63,6 +68,7 @@ app.use("/api/v1/subregion", subRegionRouter);
 app.use("/api/v1/location", locationRouter);
 app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/notification", notificationRouter);
+app.use("/api/v1/system", systemRouter);
 
 // const updateUsers = async () => {
 //   try {

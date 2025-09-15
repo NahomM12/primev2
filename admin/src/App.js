@@ -110,6 +110,7 @@ import {
   RecentActivity,
 } from "./pages/Dashboard";
 import { PrivateRoutes } from "./Routes/PrivateRoutes";
+import SystemMaintenance from "./pages/SystemMaintenance";
 
 const App = () => {
   useEffect(() => {
@@ -150,6 +151,7 @@ const App = () => {
           <Route path="change-password" element={<ChangePassword />} />
           <Route path="profile" element={<Profile />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="system" element={<SystemMaintenance />} />
         </Route>
 
         {/* Redirect "/" to dashboard instead of login */}

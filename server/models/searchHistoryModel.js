@@ -15,4 +15,7 @@ const searchHistorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Index for efficient cleanup queries
+searchHistorySchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model("SearchHistory", searchHistorySchema);
