@@ -17,6 +17,8 @@ const {
   // getRejectionMessages,
   getAllFeatured,
   getNearbyProperties,
+  getRecommendedProperties,
+  saveSearchHistory,
 } = require("../controllers/propertyCtrl");
 const { authMiddleware } = require("../middlewares/authMiddleware");
 // const { uploadImages } = require("../middlewares/uploadImages");
@@ -28,6 +30,7 @@ router.get("/type/:typeId", getPropertiesByType);
 router.get("/use/:use", getPropertiesByUse);
 router.get("/users-properties", authMiddleware, getUserProperties);
 router.get("/nearby-properties", authMiddleware, getNearbyProperties);
+router.get("/recommended", authMiddleware, getRecommendedProperties);
 // router.get("/rejected-message/:userId", getRejectionMessages);
 // router.get("/rejected-message", authMiddleware, getRejectionMessages);
 router.get("/featured", getAllFeatured);
@@ -41,6 +44,7 @@ router.use(authMiddleware);
 router.post("/change-view", changeViewCount);
 router.post("/create-property", createProperty);
 router.put("/update/:id", updateProperty);
+router.post("/save-search", saveSearchHistory);
 // router.delete("/delete-property", deleteProperty);
 router.post("/buy-property", authMiddleware, buyProperty);
 

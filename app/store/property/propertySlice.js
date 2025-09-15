@@ -183,12 +183,41 @@ export const getNearbyProperties = createAsyncThunk(
   }
 );
 
+export const getRecommendedProperties = createAsyncThunk(
+  "property/recommended",
+  async (_, thunkAPI) => {
+    try {
+      return await propertyService.getRecommendedProperties();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
+export const saveSearchQuery = createAsyncThunk(
+  "property/save-search",
+  async (query, thunkAPI) => {
+    try {
+      // This is a fire-and-forget, we don't need to handle the response in the state
+      return await propertyService.saveSearchQuery(query);
+    } catch (error) {
+      // We can silently fail here or log it, but no need to bother the user.
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
 export const propertySlice = createSlice({
   name: "property",
   initialState: {
     ...initialState,
     featuredProperties: [],
     nearbyProperties: [],
+    recommendedProperties: [],
     propertiesByUse: {
       sell: [],
       rent: [],
@@ -393,6 +422,20 @@ export const propertySlice = createSlice({
         state.nearbyProperties = action.payload;
       })
       .addCase(getNearbyProperties.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(getRecommendedProperties.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getRecommendedProperties.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.isError = false;
+        state.recommendedProperties = action.payload;
+      })
+      .addCase(getRecommendedProperties.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;

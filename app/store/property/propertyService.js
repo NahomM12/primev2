@@ -314,6 +314,44 @@ const getNearbyProperties = async () => {
   return response.data;
 };
 
+const getRecommendedProperties = async () => {
+  const userData = await AsyncStorage.getItem("user");
+  const getTokenFromLocalStorage = userData ? JSON.parse(userData) : null;
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${
+        getTokenFromLocalStorage ? getTokenFromLocalStorage.token : ""
+      }`,
+    },
+    withCredentials: true,
+  };
+  const response = await axios.get(`${baseUrl}/property/recommended`, config);
+  return response.data;
+};
+
+const saveSearchQuery = async (query) => {
+  const userData = await AsyncStorage.getItem("user");
+  const getTokenFromLocalStorage = userData ? JSON.parse(userData) : null;
+
+  if (!getTokenFromLocalStorage?.token) {
+    return; // Don't save for logged-out users
+  }
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${getTokenFromLocalStorage.token}`,
+    },
+    withCredentials: true,
+  };
+  const response = await axios.post(
+    `${baseUrl}/property/save-search`,
+    { query },
+    config
+  );
+  return response.data;
+};
+
 const propertyService = {
   createProperty,
   getAllProperties,
@@ -327,6 +365,8 @@ const propertyService = {
   changeFeatured,
   getAllFeatured,
   getNearbyProperties,
+  getRecommendedProperties,
+  saveSearchQuery,
 };
 
 export default propertyService;

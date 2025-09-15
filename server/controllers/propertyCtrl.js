@@ -6,6 +6,7 @@ const {
 const { PropertyType } = require("../models/propertyTypeModel");
 const Transaction = require("../models/transactionModel");
 const formidable = require("formidable").formidable;
+const SearchHistory = require("../models/searchHistoryModel");
 const { uploadToCloudinary } = require("../utils/cloudinary");
 const User = require("../models/userModel");
 const {
@@ -99,7 +100,7 @@ const createProperty = asyncHandler(async (req, res) => {
 
 const getAllProperties = asyncHandler(async (req, res) => {
   try {
-    console.log(req.query);
+    console.log("--- getAllProperties: Received query ---", req.query);
     const queryObj = { ...req.query };
     const excludeFields = [
       "page",
@@ -647,6 +648,197 @@ const getNearbyProperties = asyncHandler(async (req, res) => {
   }
 });
 
+const saveSearchHistory = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { query } = req.body;
+
+    console.log(
+      `--- saveSearchHistory: Saving search for user ${id} ---`,
+      query
+    );
+
+    if (!query || Object.keys(query).length === 0) {
+      // Don't save empty searches
+      return res.status(200).json({ message: "Empty query, not saved." });
+    }
+
+    const newSearch = new SearchHistory({
+      user: id,
+      query: query,
+    });
+    await newSearch.save();
+    res.status(201).json({ message: "Search history saved." });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const getRecommendedProperties = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.user;
+    const user = await User.findById(id);
+
+    console.log(`\n--- getRecommendedProperties: Starting for user ${id} ---`);
+
+    if (!user) {
+      console.log("-> User not found. Aborting.");
+      return res.json([]); // No user, no recommendations
+    }
+
+    // 1. Get user activity: viewed properties, wishlisted properties, and recent searches
+    const viewedProperties = await Property.find({ "views.user": id });
+    const wishlistedProperties = await Property.find({
+      _id: { $in: user.wishlist },
+    });
+
+    const userActivityProperties = [
+      ...viewedProperties,
+      ...wishlistedProperties,
+    ];
+    const recentSearches = await SearchHistory.find({ user: id })
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    console.log("1. User Activity Profile:");
+    console.log(`   - Viewed Properties: ${viewedProperties.length}`);
+    console.log(`   - Wishlisted Properties: ${wishlistedProperties.length}`);
+    console.log(`   - Recent Searches: ${recentSearches.length}`);
+
+    const userInteractedPropertyIds = new Set(
+      userActivityProperties.map((p) => p._id.toString())
+    );
+
+    // Fallback to featured properties if the user has no activity at all
+    if (userActivityProperties.length === 0 && recentSearches.length === 0) {
+      console.log(
+        "-> No user activity found. Falling back to featured properties."
+      );
+      const featured = await Property.find({
+        isFeatured: true,
+        status: "available",
+      })
+        .limit(10)
+        .populate("propertyType owner");
+      return res.json(featured);
+    }
+
+    console.log("2. Extracting User Preferences...");
+
+    // 2. Extract user preferences from all activities
+    const propertyTypes = new Set(
+      userActivityProperties
+        .map((p) => p.propertyType?.toString())
+        .filter(Boolean)
+    );
+    const subregions = new Set(
+      userActivityProperties
+        .map((p) => p.address?.subregion?.toString())
+        .filter(Boolean)
+    );
+    const regions = new Set(
+      userActivityProperties
+        .map((p) => p.address?.region?.toString())
+        .filter(Boolean)
+    );
+    let minPrice = Infinity,
+      maxPrice = 0;
+
+    userActivityProperties.forEach((prop) => {
+      if (prop.price) {
+        minPrice = Math.min(minPrice, prop.price);
+        maxPrice = Math.max(maxPrice, prop.price);
+      }
+    });
+
+    console.log("   - Preferences from Views/Wishlist:");
+    console.log("     - Property Types:", Array.from(propertyTypes));
+    console.log("     - Regions:", Array.from(regions));
+    console.log("     - Subregions:", Array.from(subregions));
+    console.log(
+      `     - Price Range: ${minPrice === Infinity ? "N/A" : minPrice} - ${
+        maxPrice === 0 ? "N/A" : maxPrice
+      }`
+    );
+    // Add preferences from search history
+    for (const search of recentSearches) {
+      const { query } = search;
+      if (query.propertyType) propertyTypes.add(query.propertyType.toString());
+      if (query.subregion) subregions.add(query.subregion.toString());
+      if (query.region) regions.add(query.region.toString());
+      if (query.minPrice) minPrice = Math.min(minPrice, Number(query.minPrice));
+      if (query.maxPrice) maxPrice = Math.max(maxPrice, Number(query.maxPrice));
+    }
+
+    console.log("   - Preferences after including Searches:");
+    console.log("     - Property Types:", Array.from(propertyTypes));
+    console.log("     - Regions:", Array.from(regions));
+    console.log("     - Subregions:", Array.from(subregions));
+    console.log(
+      `     - Price Range: ${minPrice === Infinity ? "N/A" : minPrice} - ${
+        maxPrice === 0 ? "N/A" : maxPrice
+      }`
+    );
+
+    const hasPriceRange = minPrice !== Infinity && maxPrice !== 0;
+
+    console.log("3. Building Recommendation Query...");
+
+    // 3. Build a query for recommended properties based on extracted preferences
+    const orConditions = [];
+    if (propertyTypes.size > 0)
+      orConditions.push({ propertyType: { $in: Array.from(propertyTypes) } });
+    if (subregions.size > 0)
+      orConditions.push({
+        "address.subregion": { $in: Array.from(subregions) },
+      });
+    if (regions.size > 0)
+      orConditions.push({ "address.region": { $in: Array.from(regions) } });
+    if (hasPriceRange) {
+      // Give a 20% buffer on the price range
+      orConditions.push({
+        price: { $gte: minPrice * 0.8, $lte: maxPrice * 1.2 },
+      });
+    }
+
+    // If there are no conditions, we can't make a recommendation. Fallback to featured.
+    if (orConditions.length === 0) {
+      console.log(
+        "-> No valid preferences to build a query. Falling back to featured properties."
+      );
+      const featured = await Property.find({
+        isFeatured: true,
+        status: "available",
+      })
+        .limit(10)
+        .populate("propertyType owner");
+      return res.json(featured);
+    }
+
+    const query = {
+      _id: { $nin: Array.from(userInteractedPropertyIds) }, // Exclude already seen/liked properties
+      status: "available",
+      $or: orConditions,
+    };
+
+    console.log("   - Final Query Object:", JSON.stringify(query, null, 2));
+
+    // 4. Fetch recommendations
+    const recommendations = await Property.find(query)
+      .limit(10) // Limit to 10 recommendations
+      .populate(
+        "propertyType owner address.region address.subregion address.location"
+      );
+
+    console.log(`4. Found ${recommendations.length} recommendations.`);
+    console.log("--- getRecommendedProperties: Finished ---\n");
+
+    res.json(recommendations);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 module.exports = {
   createProperty,
   getAllProperties,
@@ -663,4 +855,6 @@ module.exports = {
   getAllFeatured,
   changePropertyStatus,
   getNearbyProperties,
+  getRecommendedProperties,
+  saveSearchHistory,
 };

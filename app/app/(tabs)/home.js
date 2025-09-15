@@ -26,6 +26,8 @@ import {
   changeView,
   getNearbyProperties,
   getAllFeatured,
+  getRecommendedProperties,
+  saveSearchQuery,
 } from "../../store/property/propertySlice";
 import {
   addToWishlist,
@@ -128,6 +130,7 @@ const Home = () => {
     dispatch(getAllLocations());
     dispatch(getAllFeatured());
     dispatch(getNearbyProperties());
+    dispatch(getRecommendedProperties());
     dispatch(getAllPropertyTypes());
   }, []);
 
@@ -137,6 +140,7 @@ const Home = () => {
     isSuccess,
     featuredProperties,
     nearbyProperties,
+    recommendedProperties,
   } = useSelector((state) => state.property);
   const { regions, subregions, locations } = useSelector(
     (state) => state.address
@@ -284,6 +288,7 @@ const Home = () => {
       return acc;
     }, {});
 
+    dispatch(saveSearchQuery(cleanedObj));
     router.push({
       pathname: "/(tabs)/explore",
       params: {
@@ -313,6 +318,7 @@ const Home = () => {
   const handleSearchSubmit = useCallback(
     (text) => {
       const q = typeof text === "string" ? text : searchQuery;
+      dispatch(saveSearchQuery({ title: q }));
       router.push({ pathname: "/(tabs)/explore", params: { title: q } });
     },
     [searchQuery]
@@ -439,6 +445,33 @@ const Home = () => {
             onSubmit={handleSearchSubmit}
           />
         </View>
+
+        {/* RECOMMENDED FOR YOU SECTION - START */}
+        {recommendedProperties && recommendedProperties.length > 0 && (
+          <View className="mb-6">
+            <SectionHeader
+              title={t("recommended_for_you")}
+              onSeeAll={() => handleSeeAll("recommended")}
+            />
+            <FlatList
+              data={recommendedProperties}
+              keyExtractor={(item) => item._id}
+              renderItem={renderPropertyItem}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={5}
+              windowSize={5}
+              initialNumToRender={3}
+              contentContainerStyle={{
+                paddingHorizontal: SCREEN_WIDTH * 0.04,
+                paddingVertical: 8,
+              }}
+              ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
+            />
+          </View>
+        )}
+        {/* RECOMMENDED FOR YOU SECTION - END */}
 
         <View className="mb-6">
           <SectionHeader

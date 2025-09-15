@@ -18,6 +18,7 @@ import {
   getAllProperties,
   buyProperty,
   changeView,
+  saveSearchQuery,
   getAllViews,
 } from "../../store/property/propertySlice";
 import { Ionicons } from "@expo/vector-icons"; // Import icons
@@ -1001,6 +1002,7 @@ const Explore = () => {
     }, {});
 
     console.log("Submitting filters:", cleanedObj);
+    dispatch(saveSearchQuery(cleanedObj));
     dispatch(getAllProperties(cleanedObj));
     setModalVisible(false);
   }, [
