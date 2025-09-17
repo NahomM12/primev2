@@ -652,6 +652,7 @@ const saveSearchHistory = asyncHandler(async (req, res) => {
   try {
     const { id } = req.user;
     const { query } = req.body;
+    const MAX_SEARCH_HISTORY = 10;
 
     console.log(
       `--- saveSearchHistory: Saving search for user ${id} ---`,
@@ -663,11 +664,26 @@ const saveSearchHistory = asyncHandler(async (req, res) => {
       return res.status(200).json({ message: "Empty query, not saved." });
     }
 
+    // Create and save the new search entry
     const newSearch = new SearchHistory({
       user: id,
       query: query,
     });
     await newSearch.save();
+
+    // Check if the user has more than 10 search histories
+    const count = await SearchHistory.countDocuments({ user: id });
+
+    if (count > MAX_SEARCH_HISTORY) {
+      // If so, find the oldest ones and delete them
+      const oldestSearches = await SearchHistory.find({ user: id })
+        .sort({ createdAt: 1 })
+        .limit(count - MAX_SEARCH_HISTORY);
+
+      const idsToDelete = oldestSearches.map((doc) => doc._id);
+      await SearchHistory.deleteMany({ _id: { $in: idsToDelete } });
+    }
+
     res.status(201).json({ message: "Search history saved." });
   } catch (error) {
     throw new Error(error);
