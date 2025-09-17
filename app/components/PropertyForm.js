@@ -197,7 +197,10 @@ const PropertyForm = ({ formData, setFormData, propertyType }) => {
           className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl flex-row items-center justify-center"
         >
           <Ionicons name="camera-outline" size={24} color="#3B82F6" />
-          <Text className="ml-2 text-blue-600 dark:text-blue-400">
+          <Text
+            className="ml-2 text-blue-600 dark:text-blue-400"
+            onPress={() => console.log(formData.images)}
+          >
             Add Images
           </Text>
         </TouchableOpacity>
@@ -212,7 +215,7 @@ const PropertyForm = ({ formData, setFormData, propertyType }) => {
             {formData.images.map((image, index) => (
               <View key={index} className="mr-4 relative">
                 <Image
-                  source={{ uri: image.uri }}
+                  source={{ uri: typeof image === 'string' ? image : image.uri }}
                   className="w-24 h-24 rounded-xl"
                 />
                 <TouchableOpacity

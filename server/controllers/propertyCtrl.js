@@ -7,7 +7,8 @@ const { PropertyType } = require("../models/propertyTypeModel");
 const Transaction = require("../models/transactionModel");
 const formidable = require("formidable").formidable;
 const SearchHistory = require("../models/searchHistoryModel");
-const { uploadToCloudinary } = require("../utils/cloudinary");
+const obsService = require("../services/obsService");
+const path = require("path");
 const User = require("../models/userModel");
 const {
   createNotification,
@@ -33,7 +34,7 @@ const createProperty = asyncHandler(async (req, res) => {
       });
     }
 
-    // Upload images to Cloudinary
+    // Upload images to OBS
     const imageUrls = [];
     if (files.images) {
       // Handle both single and multiple files
@@ -41,9 +42,22 @@ const createProperty = asyncHandler(async (req, res) => {
         ? files.images
         : [files.images];
 
-      for (const file of imageFiles) {
+      for (const image of imageFiles) {
         try {
-          const result = await uploadToCloudinary(file.filepath);
+          const fileName = path.basename(
+            image.originalFilename || image.name || "image.jpg"
+          );
+          const result = await obsService.uploadImage(
+            image.filepath,
+            fileName,
+            {
+              folder: "images",
+              metadata: {
+                "x-obs-meta-upload-source": "image-upload",
+                "x-obs-meta-uploader": req.user._id.toString(),
+              },
+            }
+          );
           imageUrls.push(result.secure_url);
         } catch (uploadError) {
           console.error("Error uploading image:", uploadError);
@@ -223,6 +237,27 @@ const updateProperty = asyncHandler(async (req, res) => {
       });
     }
 
+    const existingImages = fields.existingImages
+      ? Array.isArray(fields.existingImages)
+        ? fields.existingImages
+        : [fields.existingImages]
+      : [];
+
+    // Handle image deletion from OBS
+    if (property.images && property.images.length > 0) {
+      const imagesToDelete = property.images.filter(
+        (imageUrl) => !existingImages.includes(imageUrl)
+      );
+
+      for (const imageUrl of imagesToDelete) {
+        try {
+          await obsService.deleteImageByUrl(imageUrl);
+        } catch (error) {
+          console.error(`Failed to delete image ${imageUrl}:`, error);
+        }
+      }
+    }
+
     // Parse the form data
     const updateData = {
       title: fields.title?.[0],
@@ -244,24 +279,38 @@ const updateProperty = asyncHandler(async (req, res) => {
     }
 
     // Handle images
+    const newImages = [];
     if (files.images) {
-      const newImages = [];
       // Handle new uploaded images
       const imageFiles = Array.isArray(files.images)
         ? files.images
         : [files.images];
-      for (const file of imageFiles) {
-        const result = await uploadToCloudinary(file.filepath);
-        newImages.push(result.secure_url);
+      for (const image of imageFiles) {
+        try {
+          const fileName = path.basename(
+            image.originalFilename || image.name || "image.jpg"
+          );
+          const result = await obsService.uploadImage(
+            image.filepath,
+            fileName,
+            {
+              folder: "images",
+              metadata: {
+                "x-obs-meta-upload-source": "image-upload",
+                "x-obs-meta-uploader": req.user._id.toString(),
+              },
+            }
+          );
+          newImages.push(result.secure_url);
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          // Continue with other images if one fails
+        }
       }
-
-      // Combine with existing images
-      const existingImages = fields.existingImages || [];
-      updateData.images = [
-        ...(Array.isArray(existingImages) ? existingImages : [existingImages]),
-        ...newImages,
-      ];
     }
+
+    // Combine with existing images
+    updateData.images = [...existingImages, ...newImages];
 
     // Update the property
     Object.assign(property, updateData);
@@ -284,12 +333,26 @@ const updateProperty = asyncHandler(async (req, res) => {
 const deleteProperty = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
-    const property = await Property.findByIdAndDelete(id);
+    const property = await Property.findById(id);
     if (!property) {
       return res.status(404).json({
         message: "Property not found",
       });
     }
+
+    // Delete images from OBS
+    if (property.images && property.images.length > 0) {
+      for (const imageUrl of property.images) {
+        try {
+          await obsService.deleteImageByUrl(imageUrl);
+        } catch (error) {
+          console.error(`Failed to delete image ${imageUrl} from OBS:`, error);
+        }
+      }
+    }
+
+    await Property.findByIdAndDelete(id);
+
     res.json({
       message: "Property deleted successfully",
     });
