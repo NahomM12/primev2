@@ -247,6 +247,7 @@ const Listing = () => {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState("available");
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
     dispatch(getUserProperties());
@@ -385,18 +386,37 @@ const Listing = () => {
                 className="flex-1"
                 showsVerticalScrollIndicator={false}
               >
-                {selectedProperty.images &&
-                selectedProperty.images.length > 0 ? (
-                  <Image
-                    source={{ uri: selectedProperty.images[0] }}
-                    className="w-screen h-72"
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View className="w-screen h-72 bg-gray-200 dark:bg-gray-700 items-center justify-center">
-                    <Ionicons name="image-outline" size={48} color="#9CA3AF" />
-                  </View>
-                )}
+                <View className="relative" style={{ height: SCREEN_HEIGHT * 0.4 }}>
+                  {selectedProperty.images && selectedProperty.images.length > 0 ? (
+                    <>
+                      <ScrollView
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        onMomentumScrollEnd={(e) => {
+                          const newIndex = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                          setActiveImageIndex(newIndex);
+                        }}
+                      >
+                        {selectedProperty.images.map((image, index) => (
+                          <Image
+                            key={index}
+                            source={{ uri: image }}
+                            style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.4 }}
+                            resizeMode="cover"
+                          />
+                        ))}
+                      </ScrollView>
+                      <View className="absolute bottom-4 right-4 bg-black/60 px-2 py-1 rounded-full">
+                        <Text className="text-white text-xs">{activeImageIndex + 1}/{selectedProperty.images.length}</Text>
+                      </View>
+                    </>
+                  ) : (
+                    <View style={{ height: SCREEN_HEIGHT * 0.4 }} className="bg-gray-200 dark:bg-gray-700 items-center justify-center">
+                      <Ionicons name="image-outline" size={48} color="#9CA3AF" />
+                    </View>
+                  )}
+                </View>
 
                 <View className="p-5">
                   <View className="flex-row justify-between items-center mb-4">
