@@ -99,7 +99,12 @@ const Home = () => {
     }
 
     let location = await Location.getCurrentPositionAsync({});
-    console.log(location);
+    dispatch(
+      getNearbyProperties({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      })
+    );
   };
   const loadColorScheme = async () => {
     try {
@@ -122,6 +127,7 @@ const Home = () => {
 
   useEffect(() => {
     loadColorScheme();
+    handleGetLocation();
     dispatch(getPropertiesByUse("sell"));
     dispatch(getPropertiesByUse("rent"));
     dispatch(getAllViews());
@@ -129,7 +135,6 @@ const Home = () => {
     dispatch(getAllSubRegions());
     dispatch(getAllLocations());
     dispatch(getAllFeatured());
-    dispatch(getNearbyProperties());
     dispatch(getRecommendedProperties());
     dispatch(getAllPropertyTypes());
   }, []);

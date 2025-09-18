@@ -172,9 +172,9 @@ export const getAllFeatured = createAsyncThunk(
 
 export const getNearbyProperties = createAsyncThunk(
   "property/get-nearby",
-  async (_, thunkAPI) => {
+  async (location, thunkAPI) => {
     try {
-      return await propertyService.getNearbyProperties();
+      return await propertyService.getNearbyProperties(location);
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || error.message

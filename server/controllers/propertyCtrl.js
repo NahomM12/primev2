@@ -654,60 +654,51 @@ const getAllFeatured = asyncHandler(async (req, res) => {
 });
 
 const getNearbyProperties = asyncHandler(async (req, res) => {
+  const { longitude, latitude } = req.query;
+  console.log(
+    "--- getNearbyProperties: Received coordinates ---",
+    `Longitude: ${longitude}, Latitude: ${latitude}`
+  );
+
+  if (!longitude || !latitude) {
+    console.log("-> Missing longitude or latitude query parameters.");
+    return res
+      .status(400)
+      .json({ message: "Longitude and latitude are required." });
+  }
+
+  const parsedLongitude = parseFloat(longitude);
+  const parsedLatitude = parseFloat(latitude);
+
+  if (isNaN(parsedLongitude) || isNaN(parsedLatitude)) {
+    console.log("-> Invalid longitude or latitude values.");
+    return res
+      .status(400)
+      .json({ message: "Invalid longitude or latitude format." });
+  }
+
   try {
-    const { id } = req.user;
-    const user = await User.findById(id);
-
-    if (!user || !user.address) {
-      return res.json([]); // Return empty array if no user or address
-    }
-
-    const { region, subregion, location } = user.address;
-
-    // 1. Properties in the same location
-    const locationProperties = await Property.find({
-      "address.location": location,
+    const properties = await Property.find({
+      coords: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [parsedLongitude, parsedLatitude],
+          },
+          $maxDistance: 5000, // 5 kilometers
+        },
+      },
       status: "available",
     })
       .populate("propertyType")
-      .populate("owner")
+      .populate("owner", "firstname lastname")
       .populate("address.region address.subregion address.location");
 
-    // 2. Properties in the same subregion (but not the same location)
-    const subregionProperties = await Property.find({
-      "address.subregion": subregion,
-      "address.location": { $ne: location },
-      status: "available",
-    })
-      .populate("propertyType")
-      .populate("owner")
-      .populate("address.region address.subregion address.location");
-
-    // 3. Properties in the same region (but not the same subregion)
-    const regionProperties = await Property.find({
-      "address.region": region,
-      "address.subregion": { $ne: subregion },
-      status: "available",
-    })
-      .populate("propertyType")
-      .populate("owner")
-      .populate("address.region address.subregion address.location");
-
-    // Combine and remove duplicates, preserving order
-    const propertyIds = new Set();
-    const combinedProperties = [
-      ...locationProperties,
-      ...subregionProperties,
-      ...regionProperties,
-    ].filter((prop) => {
-      if (propertyIds.has(prop._id.toString())) return false;
-      propertyIds.add(prop._id.toString());
-      return true;
-    });
-
-    res.json(combinedProperties);
+    console.log(`Found ${properties.length} nearby properties.`);
+    res.json(properties);
   } catch (error) {
-    throw new Error(error);
+    console.error("--- getNearbyProperties: Error ---", error);
+    res.status(500).json({ message: "Error fetching nearby properties." });
   }
 });
 

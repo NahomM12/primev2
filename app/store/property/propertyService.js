@@ -295,7 +295,7 @@ const getAllFeatured = async () => {
   return response.data;
 };
 
-const getNearbyProperties = async () => {
+const getNearbyProperties = async ({ latitude, longitude }) => {
   const userData = await AsyncStorage.getItem("user");
   const getTokenFromLocalStorage = userData ? JSON.parse(userData) : null;
 
@@ -308,7 +308,7 @@ const getNearbyProperties = async () => {
     withCredentials: true,
   };
   const response = await axios.get(
-    `${baseUrl}/property/nearby-properties`,
+    `${baseUrl}/property/nearby-properties?latitude=${latitude}&longitude=${longitude}`,
     config
   );
   return response.data;
