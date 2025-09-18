@@ -101,8 +101,10 @@ const Home = () => {
     let location = await Location.getCurrentPositionAsync({});
     dispatch(
       getNearbyProperties({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        latitude: 9.0191113,
+        longitude: 38.8224856,
+        // latitude: location.coords.latitude,
+        // longitude: location.coords.longitude,
       })
     );
   };

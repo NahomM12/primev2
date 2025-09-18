@@ -308,6 +308,7 @@ const getNearbyProperties = async ({ latitude, longitude }) => {
     withCredentials: true,
   };
   const response = await axios.get(
+    // `${baseUrl}/property/nearby-properties?latitude=${latitude}&longitude=${longitude}&timestamp=${new Date().getTime()}`,
     `${baseUrl}/property/nearby-properties?latitude=${latitude}&longitude=${longitude}`,
     config
   );

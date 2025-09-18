@@ -10,6 +10,7 @@ const SearchHistory = require("../models/searchHistoryModel");
 const obsService = require("../services/obsService");
 const path = require("path");
 const User = require("../models/userModel");
+const Location = require("../models/locationModel");
 const {
   createNotification,
   sendInAppNotification,
@@ -31,6 +32,14 @@ const createProperty = asyncHandler(async (req, res) => {
     if (!propertyType) {
       return res.status(404).json({
         message: "Property type not found",
+      });
+    }
+
+    // Get location and coordinates
+    const location = await Location.findById(fields.location[0]);
+    if (!location) {
+      return res.status(404).json({
+        message: "Location not found",
       });
     }
 
@@ -86,7 +95,7 @@ const createProperty = asyncHandler(async (req, res) => {
         subregion: fields.subregion[0],
         location: fields.location[0],
       },
-
+      coords: location.coords,
       propertyType: fields.propertyType[0],
       property_use: fields.property_use[0],
       images: imageUrls,
@@ -671,10 +680,7 @@ const getNearbyProperties = asyncHandler(async (req, res) => {
   const parsedLatitude = parseFloat(latitude);
 
   if (isNaN(parsedLongitude) || isNaN(parsedLatitude)) {
-    console.log("-> Invalid longitude or latitude values.");
-    return res
-      .status(400)
-      .json({ message: "Invalid longitude or latitude format." });
+    return res.status(400).json({ message: "Invalid coordinates" });
   }
 
   try {
